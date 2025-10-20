@@ -47,9 +47,9 @@ public class ControlUtil {
             DoubleSupplier leftXSupplier,
             double deadband,
             double expo) {
-        final double rightY = rightYSupplier.getAsDouble();
-        final double rightX = rightXSupplier.getAsDouble();
-        final double leftX = leftXSupplier.getAsDouble();
+        final double rightY = 30 * rightYSupplier.getAsDouble();
+        final double rightX = 30 * rightXSupplier.getAsDouble();
+        final double leftX = 30 * leftXSupplier.getAsDouble();
         double dx = 0;
         double dy = 0;
         double x = -1.0 * clamp(rightY, 1);
