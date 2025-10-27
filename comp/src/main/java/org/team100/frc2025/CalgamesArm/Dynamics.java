@@ -1,14 +1,14 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.motion.Config;
 import org.team100.lib.motion.dynamics.prr.PRRAcceleration;
 import org.team100.lib.motion.dynamics.prr.PRRConfig;
 import org.team100.lib.motion.dynamics.prr.PRRDynamics;
 import org.team100.lib.motion.dynamics.prr.PRRTorque;
 import org.team100.lib.motion.dynamics.prr.PRRVelocity;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointForce;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointForce;
+import org.team100.lib.motion.prr.JointVelocities;
 
 /**
  * Dynamics for 2025 Calgames arm. Units are meters, kilograms, Newton-meters,

@@ -1,6 +1,6 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
+import edu.wpi.first.math.MathUtil;
 
 /**
  * Proxies an IncrementalBareEncoder to produce a RotaryPositionSensor, by
@@ -24,28 +24,25 @@ public class ProxyRotaryPositionSensor implements RotaryPositionSensor {
      * It is very slow: call it only on startup.
      */
     public void setEncoderPosition(double positionRad) {
-        double motorPositionRad = positionRad * m_gearRatio;
-        m_encoder.setEncoderPositionRad(motorPositionRad);
+        m_encoder.setUnwrappedEncoderPositionRad(positionRad * m_gearRatio);
     }
 
-    /** Idential to RotaryMechanism.getPositionRad() */
     @Override
-    public OptionalDouble getPositionRad() {
-        OptionalDouble positionRad = m_encoder.getPositionRad();
-        if (positionRad.isEmpty())
-            return OptionalDouble.empty();
-        return OptionalDouble.of(positionRad.getAsDouble() / m_gearRatio);
+    public double getWrappedPositionRad() {
+        return MathUtil.angleModulus(getUnwrappedPositionRad());
+    }
+
+    @Override
+    public double getUnwrappedPositionRad() {
+        return m_encoder.getUnwrappedPositionRad() / m_gearRatio;
     }
 
     /**
      * Identical to RotaryMechanism.getVelocityRad_S()
      */
     @Override
-    public OptionalDouble getVelocityRad_S() {
-        OptionalDouble velocityRad_S = m_encoder.getVelocityRad_S();
-        if (velocityRad_S.isEmpty())
-            return OptionalDouble.empty();
-        return OptionalDouble.of(velocityRad_S.getAsDouble() / m_gearRatio);
+    public double getVelocityRad_S() {
+        return m_encoder.getVelocityRad_S() / m_gearRatio;
     }
 
     @Override

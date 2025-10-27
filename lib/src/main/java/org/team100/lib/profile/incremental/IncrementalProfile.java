@@ -3,14 +3,16 @@ package org.team100.lib.profile.incremental;
 import org.team100.lib.optimization.Bisection1d;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
 
 /**
  * This profile takes incremental steps from the setpoint towards the goal.
  * 
  * Use the ETA to coordinate multiple dimensions.
+ * 
+ * NOTE: these profiles don't know anything about angle wrapping.
  */
 public interface IncrementalProfile {
+    public static final int MAX_ETA = 10;
     static final boolean DEBUG = false;
 
     /**
@@ -35,8 +37,7 @@ public interface IncrementalProfile {
             Control100 c = calculate(dt, sample.control(), goal);
             sample = c.model();
             t += dt;
-            // TODO: configurable longest-ETA
-            if (t > 10)
+            if (t > MAX_ETA)
                 return Double.POSITIVE_INFINITY;
         }
         return t;
@@ -74,8 +75,9 @@ public interface IncrementalProfile {
                 scale(maxS).simulateForETA(dt, i, g) - goalETA,
                 etaTolerance,
                 100);
-        if (DEBUG)
-            Util.printf("s %5.2f\n", ss);
+        if (DEBUG) {
+            System.out.printf("s %5.2f\n", ss);
+        }
         return ss;
     }
 

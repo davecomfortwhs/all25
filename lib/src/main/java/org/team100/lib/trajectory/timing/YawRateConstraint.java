@@ -3,7 +3,9 @@ package org.team100.lib.trajectory.timing;
 import java.util.Optional;
 
 import org.team100.lib.geometry.Pose2dWithMotion;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.tuning.Mutable;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
@@ -16,12 +18,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * Does not affect maximum acceleration.
  */
 public class YawRateConstraint implements TimingConstraint {
-    private final double m_maxOmegaRad_S;
-    private final double m_maxAlphaRad_S2;
+    private final Mutable m_maxOmegaRad_S;
+    private final Mutable m_maxAlphaRad_S2;
 
-    public YawRateConstraint(double maxOmega, double maxAlpha) {
-        m_maxOmegaRad_S = maxOmega;
-        m_maxAlphaRad_S2 = maxAlpha;
+    public YawRateConstraint(LoggerFactory parent, double maxOmega, double maxAlpha) {
+        LoggerFactory log = parent.type(this);
+        m_maxOmegaRad_S = new Mutable(log, "maxOmega", maxOmega);
+        m_maxAlphaRad_S2 = new Mutable(log, "maxAlpha", maxAlpha);
     }
 
     /**
@@ -33,8 +36,8 @@ public class YawRateConstraint implements TimingConstraint {
      *               never useful for trajectories. A good number to try here might
      *               be 0.2.
      */
-    public YawRateConstraint(SwerveKinodynamics limits, double scale) {
-        this(limits.getMaxAngleSpeedRad_S() * scale, limits.getMaxAngleAccelRad_S2() * scale);
+    public YawRateConstraint(LoggerFactory log, SwerveKinodynamics limits, double scale) {
+        this(log, limits.getMaxAngleSpeedRad_S() * scale, limits.getMaxAngleAccelRad_S2() * scale);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class YawRateConstraint implements TimingConstraint {
         // Heading rate in rad/m
         final double heading_rate = state.getHeadingRate();
         // rad/s / rad/m => m/s.
-        return new NonNegativeDouble(m_maxOmegaRad_S / Math.abs(heading_rate));
+        return new NonNegativeDouble(m_maxOmegaRad_S.getAsDouble() / Math.abs(heading_rate));
     }
 
     @Override
@@ -60,7 +63,7 @@ public class YawRateConstraint implements TimingConstraint {
         // Heading rate in rad/m
         final double heading_rate = state.getHeadingRate();
         // rad/s^2 / rad/m => m/s^2
-        double limitM_S = m_maxAlphaRad_S2 / Math.abs(heading_rate);
+        double limitM_S = m_maxAlphaRad_S2.getAsDouble() / Math.abs(heading_rate);
         return new MinMaxAcceleration(-limitM_S, limitM_S);
     }
 }

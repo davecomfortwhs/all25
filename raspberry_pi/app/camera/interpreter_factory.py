@@ -23,8 +23,8 @@ class InterpreterFactory:
         # object_higher = np.array((70, 255, 255))
         # get these values from changing the range till the object is highlighted
         # WHITE TARGET VALUES
-        object_lower = np.array((0, 0, 200))
-        object_higher = np.array((255, 50, 255))
+        object_lower = np.array((0, 25, 150))
+        object_higher = np.array((255, 255, 255))
         size = cam.get_size()
         if identity == Identity.DIST_TEST:
             scale = 1.0
@@ -60,14 +60,14 @@ class InterpreterFactory:
                 | Identity.FUNNEL
                 | Identity.DIST_TEST
                 | Identity.JOELS_TEST
-            ):
+                ):
                 display = RealDisplay(
                     int(scale * size.width),
                     int(scale * size.height),
                     "tag" + str(camera_num),
                 )
                 return TagDetector(identity, cam, camera_num, display, network)
-            case (Identity.DEV|Identity.DEV2| Identity.CORAL_RIGHT| Identity.CORAL_LEFT):
+            case (Identity.DEV|Identity.DEV2|Identity.CORAL_RIGHT| Identity.CORAL_LEFT):
                 display = RealDisplay(
                     int(scale * size.width),
                     int(scale * size.height),

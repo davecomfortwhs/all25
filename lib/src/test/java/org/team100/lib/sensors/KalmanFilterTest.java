@@ -6,10 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.util.Util;
 
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.SteadyStateKalmanFilter;
 import edu.wpi.first.math.numbers.N1;
@@ -70,7 +69,7 @@ public class KalmanFilterTest {
         Random r = new Random();
         // run some observations through it
         if (DEBUG)
-            Util.printf(
+            System.out.printf(
                     "i position velocity positionObservation predictedPosition predictedVelocity correctedPosition correctedVelocity\n");
         double predictedPosition = 0;
         double predictedVelocity = 0;
@@ -92,7 +91,7 @@ public class KalmanFilterTest {
             correctedPosition = kf.getXhat().get(0, 0);
             correctedVelocity = kf.getXhat().get(1, 0);
             if (DEBUG)
-                Util.printf("%d %f %f %f %f %f %f %f\n",
+                System.out.printf("%d %f %f %f %f %f %f %f\n",
                         i, position, velocity, positionObservation,
                         predictedPosition, predictedVelocity,
                         correctedPosition, correctedVelocity);
@@ -138,7 +137,7 @@ public class KalmanFilterTest {
         Random r = new Random();
         // run some observations through it
         if (DEBUG)
-            Util.printf(
+            System.out.printf(
                     "i position velocity positionObservation velocityObservation predictedPosition predictedVelocity correctedPosition correctedVelocity\n");
         double predictedPosition = 0;
         double predictedVelocity = 0;
@@ -160,7 +159,7 @@ public class KalmanFilterTest {
             correctedPosition = kf.getXhat().get(0, 0);
             correctedVelocity = kf.getXhat().get(1, 0);
             if (DEBUG)
-                Util.printf("%d %f %f %f %f %f %f %f %f\n",
+                System.out.printf("%d %f %f %f %f %f %f %f %f\n",
                         i, position, velocity, positionObservation, velocityObservation,
                         predictedPosition, predictedVelocity,
                         correctedPosition, correctedVelocity);
@@ -191,7 +190,7 @@ public class KalmanFilterTest {
         Matrix<N2, N2> K = kf.getK();
         assertArrayEquals(new double[] { 0.039, 0.011, 0, 0.828 }, K.getData(), 0.001);
         if (DEBUG)
-            Util.printf("[%10.5f %10.5f \n %10.5f %10.5f]\n",
+            System.out.printf("[%10.5f %10.5f \n %10.5f %10.5f]\n",
                     K.get(0, 0), K.get(0, 1), K.get(1, 0), K.get(1, 1));
 
         kf.setXhat(MatBuilder.fill(Nat.N2(), Nat.N1(), 0, 0));
@@ -202,7 +201,7 @@ public class KalmanFilterTest {
         final double velocityOffsetRS = 0.05;
 
         if (DEBUG)
-            Util.printf(
+            System.out.printf(
                     "tSec,posTrueR,velTrueRS,posObsR,velObsRS,posPredR,velPredRS,PosCorrR,velCorrRS\n");
         double posTrueR = 0; // radians
         double velTrueRS = 0; // radians per sec
@@ -242,7 +241,7 @@ public class KalmanFilterTest {
             posCorrR = kf.getXhat().get(0, 0);
             velCorrRS = kf.getXhat().get(1, 0);
             if (DEBUG)
-                Util.printf("%5.2f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f\n",
+                System.out.printf("%5.2f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f\n",
                         tSec, posTrueR, velTrueRS, posObsR, velObsRS,
                         posPredR, velPredRS,
                         posCorrR, velCorrRS);

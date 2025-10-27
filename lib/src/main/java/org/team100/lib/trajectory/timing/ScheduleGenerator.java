@@ -6,7 +6,6 @@ import java.util.List;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.trajectory.Trajectory100;
 import org.team100.lib.trajectory.path.Path100;
-import org.team100.lib.util.Util;
 
 /**
  * Given a path, produces a trajectory, which includes the path and adds a
@@ -45,7 +44,7 @@ public class ScheduleGenerator {
             return timeParameterizeTrajectory(samples, start_vel, end_vel);
         } catch (TimingException e) {
             e.printStackTrace();
-            Util.warn("Timing exception");
+            System.out.println("WARNING: Timing exception");
             return new Trajectory100();
         }
     }

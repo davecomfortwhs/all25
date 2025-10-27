@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.testing.TestUtil;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -35,7 +35,7 @@ public class LynxArmKinematicsTest {
         Pose3d fixed = LynxArmKinematics.fix(p);
         // non-vertical axis that needs fixing: make yaw zero
         if (DEBUG)
-            System.out.printf("fixed %s\n", Util.poseStr(fixed));
+            System.out.printf("fixed %s\n", StrUtil.poseStr(fixed));
         // projection method
         TestUtil.verify(new Pose3d(1, 0, 0, new Rotation3d(0.081, 1.237, 0)), fixed, "fix3");
         // yaw substitution method
@@ -49,7 +49,7 @@ public class LynxArmKinematicsTest {
         Pose3d fixed = LynxArmKinematics.fix(p);
         // non-vertical axis that needs fixing: make yaw match the translation (45 deg)
         if (DEBUG)
-            System.out.printf("fixed %s\n", Util.poseStr(fixed));
+            System.out.printf("fixed %s\n", StrUtil.poseStr(fixed));
         // projection method
         TestUtil.verify(new Pose3d(1, 1, 0, new Rotation3d(0.819, 1.01, Math.PI / 4)), fixed, "fix3");
         // yaw substitution method
@@ -64,7 +64,7 @@ public class LynxArmKinematicsTest {
         Pose3d fixed = LynxArmKinematics.fix(p);
         // this just rotates the pure pitch in yaw.
         if (DEBUG)
-            System.out.printf("fixed %s\n", Util.poseStr(fixed));
+            System.out.printf("fixed %s\n", StrUtil.poseStr(fixed));
         // projection method
         TestUtil.verify(new Pose3d(1, 1, 0, new Rotation3d(0.699, 1.145, Math.PI / 4)), fixed, "fix3");
         // yaw substitution method
@@ -82,7 +82,7 @@ public class LynxArmKinematicsTest {
             Pose3d p = new Pose3d(0, 0.15, 0, new Rotation3d(0, Math.PI / 2 - 0.01, 0));
             Pose3d fixed = LynxArmKinematics.fix(p);
             if (DEBUG)
-                System.out.printf("fixed %s\n", Util.poseStr(fixed));
+                System.out.printf("fixed %s\n", StrUtil.poseStr(fixed));
             // projection
             // it just goes all the way to vertical since it's quite close
             TestUtil.verify(new Pose3d(0, 0.15, 0, new Rotation3d(0, Math.PI / 2, 0)), fixed,
@@ -106,7 +106,7 @@ public class LynxArmKinematicsTest {
             Pose3d fixed = LynxArmKinematics.fix(p);
             // this illustrates the problem.
             if (DEBUG)
-                System.out.printf("fixed %s\n", Util.poseStr(fixed));
+                System.out.printf("fixed %s\n", StrUtil.poseStr(fixed));
             TestUtil.verify(new Pose3d(0, 0.15, 0, new Rotation3d(0, Math.PI / 2, 0)), fixed, "fix3");
             LynxArmConfig q = k.inverse(initial, fixed);
             // projection method

@@ -3,12 +3,13 @@ package org.team100.frc2025.CalgamesArm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.team100.lib.commands.Done;
+import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.geometry.HolonomicPose2d;
-import org.team100.lib.motion.kinematics.AnalyticalJacobian;
-import org.team100.lib.motion.kinematics.ElevatorArmWristKinematics;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.motion.prr.AnalyticalJacobian;
+import org.team100.lib.motion.prr.ElevatorArmWristKinematics;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointVelocities;
 import org.team100.lib.trajectory.TrajectoryPlanner;
 import org.team100.lib.trajectory.timing.ConstantConstraint;
 import org.team100.lib.trajectory.timing.JointConstraint;
@@ -25,9 +26,11 @@ public class MechTrajectories extends Command {
     private final TrajectoryPlanner m_planner;
 
     public MechTrajectories(
+            LoggerFactory parent,
             CalgamesMech mech,
             ElevatorArmWristKinematics k,
             AnalyticalJacobian j) {
+        LoggerFactory log = parent.type(this);
         m_subsystem = mech;
         List<TimingConstraint> c = new ArrayList<>();
         if (USE_JOINT_CONSTRAINT) {
@@ -40,8 +43,8 @@ public class MechTrajectories extends Command {
 
         } else {
             // These are known to work, but suboptimal.
-            c.add(new ConstantConstraint(10, 5));
-            c.add(new YawRateConstraint(10, 5));
+            c.add(new ConstantConstraint(log, 10, 5));
+            c.add(new YawRateConstraint(log, 10, 5));
             // This is new
             c.add(new TorqueConstraint(20));
         }
@@ -59,14 +62,14 @@ public class MechTrajectories extends Command {
     public Command terminal(String name, HolonomicPose2d start, HolonomicPose2d end) {
 
         /** Use the start course and ignore the start pose for now */
-        Done f = new GoToPoseCalGamesMech(m_subsystem, start.course(), end, m_planner);
+        MoveAndHold f = new GoToPoseCalGamesMech(m_subsystem, start.course(), end, m_planner);
         return f
                 .until(f::isDone)
                 .withName(name);
     }
 
     /** A command that goes from the start to the end and then waits forever. */
-    public Done endless(String name, HolonomicPose2d start, HolonomicPose2d end) {
+    public MoveAndHold endless(String name, HolonomicPose2d start, HolonomicPose2d end) {
 
         /** Use the start course and ignore the start pose for now */
         GoToPoseCalGamesMech c = new GoToPoseCalGamesMech(

@@ -8,8 +8,6 @@ import java.util.function.DoubleBinaryOperator;
  * This was used by 254 in 2023 to find optimal drive wheel speeds, which isn't
  * something we do anymore, so ...
  * 
- * TODO: maybe remove this?
- * 
  * @see https://en.wikipedia.org/wiki/Regula_falsi
  */
 public class RegulaFalsi2d {

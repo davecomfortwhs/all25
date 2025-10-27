@@ -19,6 +19,7 @@ public class NumericLynxArmKinematicsTest {
         Pose3d goal = new Pose3d(
                 new Translation3d(0.19991979, 0.0011040928, 0.19832649),
                 new Rotation3d(3.3019369e-18, 0.79406969, 7.6530612e-19));
+        @SuppressWarnings("unused")
         LynxArmConfig i = k.inverse(c, goal);
     }
 }

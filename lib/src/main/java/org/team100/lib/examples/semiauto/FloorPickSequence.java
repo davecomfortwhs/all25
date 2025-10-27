@@ -5,10 +5,10 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.team100.lib.commands.drivetrain.DriveToTranslationWithRelativeBearing;
-import org.team100.lib.controller.drivetrain.SwerveController;
+import org.team100.lib.commands.r3.DriveToTranslationWithRelativeBearing;
+import org.team100.lib.controller.r3.ControllerR3;
 import org.team100.lib.logging.FieldLogger;
-import org.team100.lib.motion.drivetrain.SwerveDriveSubsystem;
+import org.team100.lib.motion.swerve.SwerveDriveSubsystem;
 import org.team100.lib.profile.HolonomicProfile;
 import org.team100.lib.targeting.Targets;
 
@@ -21,18 +21,20 @@ import edu.wpi.first.wpilibj2.command.Command;
  * it, and then sweep the intake over the target.
  */
 public class FloorPickSequence {
+
     // landing point distance to target
     private static final double DISTANCE = 1.0;
-    // pick is from the back
+    private static final double PICKOFFSET = 0.193;  // pick is from the back
     private static final Rotation2d RELATIVE_BEARING = Rotation2d.k180deg;
 
     public static Command get(
             FieldLogger.Log fieldLog,
             SwerveDriveSubsystem drive,
             Targets targets,
-            SwerveController controller,
+            ControllerR3 controller,
             HolonomicProfile profile) {
-        Supplier<Optional<Translation2d>> target = () -> targets.getClosestTarget();
+        Supplier<Optional<Translation2d>> target = () -> Optional.of(targets.getClosestTarget().get().plus(new Translation2d(0,PICKOFFSET
+        )));
         Supplier<Optional<Translation2d>> runway = () -> {
             Optional<Translation2d> t = target.get();
             if (t.isEmpty())

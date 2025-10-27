@@ -41,8 +41,6 @@ public class NumericLynxArmKinematics implements LynxArmKinematics {
     @Override
     public LynxArmConfig inverse(LynxArmConfig initial, Pose3d end) {
         Vector<N5> q0 = initial.toVec();
-
-        // TODO: raise the step limit
         Map<String, Double> qMap = m_arm.inverse(q0, 1, "center_point", end);
         LynxArmConfig c = new LynxArmConfig(
                 qMap.get("base_pan"),

@@ -16,6 +16,8 @@ import org.team100.lib.motion.five_bar.Scenario;
 import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motor.Falcon6Motor;
 import org.team100.lib.motor.MotorPhase;
+import org.team100.lib.motor.NeutralMode;
+import org.team100.lib.util.CanId;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -62,7 +64,8 @@ public class FiveBarCartesian extends SubsystemBase {
         LoggerFactory loggerP1 = logger.name("p1");
         Falcon6Motor motorP1 = new Falcon6Motor(
                 loggerP1,
-                1,
+                new CanId(1),
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,
@@ -81,7 +84,8 @@ public class FiveBarCartesian extends SubsystemBase {
         LoggerFactory loggerP5 = logger.name("p5");
         Falcon6Motor motorP5 = new Falcon6Motor(
                 loggerP5,
-                2,
+                new CanId(2),
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,
@@ -110,19 +114,19 @@ public class FiveBarCartesian extends SubsystemBase {
         double y3 = t.getY();
         ActuatorAngles p = FiveBarKinematics.inverse(
                 SCENARIO, x3 + SCENARIO.xcenter, y3 + SCENARIO.ycenter);
-        m_mechP1.setPosition(p.q1(), 0, 0, 0);
-        m_mechP5.setPosition(p.q5(), 0, 0, 0);
+        m_mechP1.setUnwrappedPosition(p.q1(), 0, 0, 0);
+        m_mechP5.setUnwrappedPosition(p.q5(), 0, 0, 0);
     }
 
     public JointPositions getJointPositions() {
-        double q1 = m_mechP1.getPositionRad().orElse(0);
-        double q5 = m_mechP5.getPositionRad().orElse(0);
+        double q1 = m_mechP1.getWrappedPositionRad();
+        double q5 = m_mechP5.getWrappedPositionRad();
         return FiveBarKinematics.forward(SCENARIO, q1, q5);
     }
 
     public Translation2d getPosition() {
-        double q1 = m_mechP1.getPositionRad().orElse(0);
-        double q5 = m_mechP5.getPositionRad().orElse(0);
+        double q1 = m_mechP1.getWrappedPositionRad();
+        double q5 = m_mechP5.getWrappedPositionRad();
         JointPositions j = FiveBarKinematics.forward(SCENARIO, q1, q5);
         return new Translation2d(j.P3().x(), j.P3().y());
     }

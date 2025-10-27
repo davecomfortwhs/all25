@@ -33,6 +33,7 @@ public class NTPrimitiveLogger implements PrimitiveLogger {
     private final Set<String> keys = new HashSet<>();
 
     public NTPrimitiveLogger() {
+        NetworkTableInstance.getDefault().startServer();
         inst = NetworkTableInstance.getDefault();
         // Also log to disk
         DataLogManager.start();

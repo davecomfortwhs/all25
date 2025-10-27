@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 /**
  * Mirrors tag_finder24.py Blip24.
- * TODO: change the coordinate system to x-forward.
  */
 public class Blip24 {
     private final int id;
@@ -50,8 +49,6 @@ public class Blip24 {
      * Extract translation and rotation from z-forward blip and return the same
      * translation and rotation as an NWU x-forward transform. Package-private for
      * testing.
-     * 
-     * TODO: remove this, make blips return x-forward
      */
     public Transform3d blipToTransform() {
         return new Transform3d(blipToTranslation(), blipToRotation());

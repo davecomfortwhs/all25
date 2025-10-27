@@ -3,7 +3,6 @@ package frc.robot;
 import org.team100.lib.hid.ControlUtil;
 import org.team100.lib.motion.lynxmotion_arm.AnalyticLynxArmKinematics;
 import org.team100.lib.motion.lynxmotion_arm.LynxArmKinematics;
-import org.team100.lib.motion.lynxmotion_arm.NumericLynxArmKinematics;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;

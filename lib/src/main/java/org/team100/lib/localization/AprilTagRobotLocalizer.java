@@ -13,10 +13,10 @@ import org.team100.lib.logging.LoggerFactory.BooleanLogger;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.logging.LoggerFactory.EnumLogger;
 import org.team100.lib.logging.LoggerFactory.Pose2dLogger;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.logging.LoggerFactory.Transform3dLogger;
 import org.team100.lib.network.CameraReader;
+import org.team100.lib.state.ModelR3;
 import org.team100.lib.util.TrailingHistory;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -74,7 +74,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
             0.001,
             0.1 };
 
-    private final DoubleFunction<SwerveModel> m_history;
+    private final DoubleFunction<ModelR3> m_history;
     private final VisionUpdater m_visionUpdater;
     private final AprilTagFieldLayoutWithCorrectOrientation m_layout;
 
@@ -102,6 +102,9 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
     private final BooleanLogger m_log_using_gyro;
     private final DoubleLogger m_log_tag_error;
     private final Pose2dLogger m_log_pose;
+    /** For calibration. */
+    private final Transform3dLogger m_log_tag_in_camera;
+
     /**
      * The difference between the current instant and the instant of the blip,
      * including our magic correction, i.e. this is the time we look up in the pose
@@ -137,7 +140,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
     public AprilTagRobotLocalizer(
             LoggerFactory parent,
             AprilTagFieldLayoutWithCorrectOrientation layout,
-            DoubleFunction<SwerveModel> history,
+            DoubleFunction<ModelR3> history,
             VisionUpdater visionUpdater) {
         super("vision", "blips", StructBuffer.create(Blip24.struct));
         LoggerFactory child = parent.type(this);
@@ -157,6 +160,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
         m_log_using_gyro = child.booleanLogger(Level.TRACE, "rotation source");
         m_log_tag_error = child.doubleLogger(Level.TRACE, "tag error");
         m_log_pose = child.pose2dLogger(Level.TRACE, "pose");
+        m_log_tag_in_camera = child.transform3dLogger(Level.TRACE, "tag in camera");
         m_log_lag = child.doubleLogger(Level.TRACE, "lag");
     }
 
@@ -220,7 +224,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
         if (!optAlliance.isPresent()) {
             // this happens on startup
             if (DEBUG)
-                Util.warn("VisionDataProvider24: Alliance is not present!");
+                System.out.println("WARNING: VisionDataProvider24: Alliance is not present!");
             return;
         }
         Alliance alliance = optAlliance.get();
@@ -236,8 +240,9 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
 
         // The gyro rotation for the frame timestamp
         final Rotation2d gyroRotation = historicalPose.getRotation();
-        if (DEBUG)
-            Util.printf("gyro rotation %f\n", gyroRotation.getRadians());
+        if (DEBUG) {
+            System.out.printf("gyro rotation %f\n", gyroRotation.getRadians());
+        }
 
         for (int i = 0; i < blips.length; ++i) {
             Blip24 blip = blips[i];
@@ -245,7 +250,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
             if (DEBUG) {
                 Translation3d t = blip.getRawPose().getTranslation();
                 Rotation3d r = blip.getRawPose().getRotation();
-                Util.printf("blip raw pose %d X %5.2f Y %5.2f Z %5.2f R %5.2f P %5.2f Y %5.2f\n",
+                System.out.printf("blip raw pose %d X %5.2f Y %5.2f Z %5.2f R %5.2f P %5.2f Y %5.2f\n",
                         blip.getId(), t.getX(), t.getY(), t.getZ(), r.getX(), r.getY(), r.getZ());
             }
 
@@ -253,7 +258,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
             Optional<Pose3d> tagInFieldCoordsOptional = m_layout.getTagPose(alliance, blip.getId());
             if (!tagInFieldCoordsOptional.isPresent()) {
                 // This shouldn't happen, but it does.
-                Util.warnf("VisionDataProvider24: no tag for id %d\n", blip.getId());
+                System.out.printf("WARNING: VisionDataProvider24: no tag for id %d\n", blip.getId());
                 continue;
             }
 
@@ -261,20 +266,19 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
             final Pose3d tagInField = tagInFieldCoordsOptional.get();
 
             // Camera-to-tag, as it appears in the camera frame.
-            Transform3d tagInCamera = blip.blipToTransform();
+            Transform3d blipTransform = blip.blipToTransform();
+            m_log_tag_in_camera.log(() -> blipTransform);
+
+            Transform3d tagInCamera = blipTransform;
 
             if (DEBUG) {
                 // This is used for camera offset calibration. Place a tag at a known position,
                 // observe the offset, and add it to Camera.java, inverted.
                 Transform3d tagInRobot = cameraOffset.plus(tagInCamera);
-                Util.printf("tagInRobot id %d X %5.2f Y %5.2f Z %5.2f R %5.2f P %5.2f Y %5.2f\n",
-                        blip.getId(),
-                        tagInRobot.getTranslation().getX(),
-                        tagInRobot.getTranslation().getY(),
-                        tagInRobot.getTranslation().getZ(),
-                        tagInRobot.getRotation().getX(),
-                        tagInRobot.getRotation().getY(),
-                        tagInRobot.getRotation().getZ());
+                System.out.printf("tagInRobot id %d X %5.2f Y %5.2f Z %5.2f R %5.2f P %5.2f Y %5.2f\n",
+                        blip.getId(), tagInRobot.getTranslation().getX(), tagInRobot.getTranslation().getY(),
+                        tagInRobot.getTranslation().getZ(), tagInRobot.getRotation().getX(),
+                        tagInRobot.getRotation().getY(), tagInRobot.getRotation().getZ());
             }
 
             if (tagInCamera.getTranslation().getNorm() > TAG_ROTATION_BELIEF_THRESHOLD_M) {
@@ -315,13 +319,13 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
                 // If we've turned vision off altogether, then don't apply this update to the
                 // pose estimator.
                 if (DEBUG)
-                    Util.println("heedvision is off");
+                    System.out.println("heedvision is off");
                 continue;
             }
 
-            if (blip.blipToTransform().getTranslation().getNorm() > m_heedRadiusM) {
+            if (blipTransform.getTranslation().getNorm() > m_heedRadiusM) {
                 if (DEBUG)
-                    Util.println("tag is too far");
+                    System.out.println("tag is too far");
                 // Skip too-far tags.
                 continue;
             }
@@ -330,7 +334,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
                 // Ignore the very first update since we have no idea if it is far from the
                 // previous one.
                 if (DEBUG)
-                    Util.println("skip first update");
+                    System.out.println("skip first update");
                 m_prevPose = pose;
                 continue;
             }
@@ -340,7 +344,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
                 // The new estimate is too far from the previous one: it's probably garbage.
                 m_prevPose = pose;
                 if (DEBUG)
-                    Util.println("too far from previous");
+                    System.out.println("too far from previous");
                 continue;
             }
 
@@ -389,8 +393,6 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
              * NEW (3/12/25), 2 cm std dev seems kinda realistic for 1 m.
              * 
              * If it still jitters, try 0.03 or 0.05, but watch out for slow convergence.
-             * 
-             * TODO: gather some actual data.
              */
             final double K = 0.03;
             return new double[] {

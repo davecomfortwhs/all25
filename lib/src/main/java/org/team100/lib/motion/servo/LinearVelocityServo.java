@@ -1,6 +1,6 @@
 package org.team100.lib.motion.servo;
 
-import java.util.OptionalDouble;
+import org.team100.lib.music.Player;
 
 /**
  * Represents a servo whose output is measured in linear units -- this is
@@ -12,11 +12,13 @@ import java.util.OptionalDouble;
  * 
  * A ball-shooter is a wheel, but the important thing is its surface speed.
  */
-public interface LinearVelocityServo {
+public interface LinearVelocityServo extends Player {
     void reset();
 
+    void setDutyCycle(double dutyCycle);
+
     /**
-     * 's no profile here, it just sets the mechanism velocity.
+     * There's no profile here, it just sets the mechanism velocity.
      * 
      * Set velocity and compute implied acceleration based on the previous call,
      * using TimedRobot100.LOOP_PERIOD_S. If you call this more often, you'll
@@ -33,15 +35,15 @@ public interface LinearVelocityServo {
     void setVelocity(double setpointM_S, double setpointM_S2);
 
     /** meters/sec. Note this can be noisy, maybe filter it. */
-    OptionalDouble getVelocity();
+    double getVelocity();
 
-    /** we're within some tolerance of the desired  */
+    /** we're within some tolerance of the desired */
     boolean atGoal();
 
     void stop();
 
-    /** Implementations should use the Cache mechanism. */
-    OptionalDouble getDistance();
+    /** meters. Implementations should use the Cache mechanism. */
+    double getDistance();
 
     /** For logging */
     void periodic();

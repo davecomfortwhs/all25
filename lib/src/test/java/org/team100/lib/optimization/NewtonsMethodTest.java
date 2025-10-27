@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.GeometryUtil;
 import org.team100.lib.motion.lynxmotion_arm.LynxArmConfig;
 import org.team100.lib.motion.urdf.URDFAL5D;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -131,7 +131,7 @@ public class NewtonsMethodTest {
         Matrix<N2, N2> j0 = NumericalJacobian100.numericalJacobian(
                 Nat.N2(), Nat.N2(), err, q0);
         if (DEBUG)
-            System.out.println(Util.matStr(j0));
+        System.out.println(StrUtil.matStr(j0));
         // dx/dq0
         assertEquals(-1, j0.get(0, 0), 1e-9);
         // dx/dq1
@@ -210,7 +210,7 @@ public class NewtonsMethodTest {
 
     void printxy(Vector<N2> err) {
         if (DEBUG)
-            System.out.println(Util.vecStr(err));
+            System.out.println(StrUtil.vecStr(err));
     }
 
     @Test
@@ -240,7 +240,7 @@ public class NewtonsMethodTest {
         // jacobian at q0
         Matrix<N3, N2> j0 = NumericalJacobian100.numericalJacobian(Nat.N2(), Nat.N3(), err, q0);
         if (DEBUG)
-            System.out.println(Util.matStr(j0));
+            System.out.println(StrUtil.matStr(j0));
         // dx/dq0
         assertEquals(-1, j0.get(0, 0), 1e-9);
         // dx/dq1
@@ -312,7 +312,7 @@ public class NewtonsMethodTest {
         // jacobian at q0
         Matrix<N3, N2> j0 = NumericalJacobian100.numericalJacobian(Nat.N2(), Nat.N3(), err, q0);
         if (DEBUG)
-            System.out.println(Util.matStr(j0));
+            System.out.println(StrUtil.matStr(j0));
 
         // note the jacobian is different since the "log" is in there and we are far
         // from the goal.
@@ -413,7 +413,7 @@ public class NewtonsMethodTest {
         // jacobian at q0
         Matrix<N3, N2> j0 = NumericalJacobian100.numericalJacobian(Nat.N2(), Nat.N3(), err, q0);
         if (DEBUG)
-            System.out.println(Util.matStr(j0));
+            System.out.println(StrUtil.matStr(j0));
 
         // note the jacobian is different since the "log" is in there.
         assertEquals(1.024, j0.get(0, 0), 1e-3);
@@ -469,7 +469,7 @@ public class NewtonsMethodTest {
         // jacobian at q0
         Matrix<N3, N2> j0 = NumericalJacobian100.numericalJacobian(Nat.N2(), Nat.N3(), err, q0);
         if (DEBUG)
-            System.out.println(Util.matStr(j0));
+        System.out.println(StrUtil.matStr(j0));
         assertEquals(0.715, j0.get(0, 0), 1e-3);
         assertEquals(-0.270, j0.get(0, 1), 1e-3);
         assertEquals(0.913, j0.get(1, 0), 1e-3);
@@ -542,9 +542,9 @@ public class NewtonsMethodTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.println("Newton's solve for RR arm");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Newton's solve for RR arm");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -588,9 +588,9 @@ public class NewtonsMethodTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.println("Newton's solve2 for RR arm");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Newton's solve2 for RR arm");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -604,15 +604,15 @@ public class NewtonsMethodTest {
                 new Rotation3d(3.3019369e-18, 0.79406969, 7.6530612e-19));
         Function<Vector<N5>, Pose3d> fwd = q -> {
             Pose3d pose = m.forward(m.qMap(q)).get("center_point");
-            // System.out.printf("fwd() q %s pose %s\n", Util.vecStr(q),
-            // Util.poseStr(pose));
+            // System.out.printf("fwd() q %s pose %s\n", StrUtil.vecStr(q),
+            // StrUtil.poseStr(pose));
             return pose;
         };
         Function<Vector<N5>, Vector<N6>> err = q -> {
             Pose3d estimate = fwd.apply(q);
-            // System.out.printf("estimate %s\n", Util.poseStr(estimate));
+            // System.out.printf("estimate %s\n", StrUtil.poseStr(estimate));
             Twist3d twist = goal.log(estimate);
-            // System.out.printf("twist %s\n", Util.twistStr(twist));
+            // System.out.printf("twist %s\n", StrUtil.twistStr(twist));
             return GeometryUtil.toVec(twist);
         };
 
@@ -637,7 +637,7 @@ public class NewtonsMethodTest {
         solver.solve2(q0, restarts);
         if (DEBUG) {
             long finishTime = System.nanoTime();
-            Util.printf("ET (ms): %6.3f\n",
+            System.out.printf("ET (ms): %6.3f\n",
                     ((double) finishTime - startTime) / 1000000);
 
         }

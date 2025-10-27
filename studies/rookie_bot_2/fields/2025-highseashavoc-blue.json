@@ -1,0 +1,19 @@
+{
+    "game": "High Seas Havoc",
+    "field-image": "2025-highseashavoc-blue.png",
+    "field-corners": {
+      "top-left": [
+        182,
+        104
+      ],
+      "bottom-right": [
+        1363,
+        655
+      ]
+    },
+    "field-size": [
+      30.000,
+      14.000
+    ],
+    "field-unit": "foot"
+  }

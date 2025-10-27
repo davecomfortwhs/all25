@@ -2,8 +2,7 @@ package org.team100.lib.geometry;
 
 import java.util.Optional;
 
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -40,12 +39,12 @@ public class TargetUtil {
      * @param target field-relative target position
      * @return apparent rotation of the target around the robot, radians per second
      */
-    public static double targetMotion(SwerveModel state, Translation2d target) {
+    public static double targetMotion(ModelR3 state, Translation2d target) {
         Translation2d robot = state.pose().getTranslation();
         Translation2d translation = target.minus(robot);
 
         Rotation2d bearing = translation.getAngle();
-        FieldRelativeVelocity twist = state.velocity();
+        GlobalVelocityR3 twist = state.velocity();
         Rotation2d relativeBearing = getRelativeBearing(bearing, twist);
 
         double speed = twist.norm();
@@ -53,7 +52,7 @@ public class TargetUtil {
         return speed * relativeBearing.getSin() / range;
     }
 
-    private static Rotation2d getRelativeBearing(Rotation2d bearing, FieldRelativeVelocity velo) {
+    private static Rotation2d getRelativeBearing(Rotation2d bearing, GlobalVelocityR3 velo) {
         Optional<Rotation2d> course = velo.angle();
         if (course.isEmpty()) {
             // if we're not moving, the relative bearing is just the bearing.

@@ -1,10 +1,10 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.commands.Done;
+import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointVelocities;
 import org.team100.lib.profile.incremental.CompleteProfile;
 import org.team100.lib.profile.incremental.CurrentLimitedExponentialProfile;
 import org.team100.lib.profile.incremental.IncrementalProfile;
@@ -17,7 +17,7 @@ import edu.wpi.first.math.MathUtil;
  * Follow three uncoordinated profiles in configuration space.
  * Starting point and velocity are current measurements.
  */
-public class FollowJointProfiles extends Done {
+public class FollowJointProfiles extends MoveAndHold {
     private static final double DT = TimedRobot100.LOOP_PERIOD_S;
 
     private final CalgamesMech m_subsystem;
@@ -81,6 +81,7 @@ public class FollowJointProfiles extends Done {
                 new CompleteProfile(12, 8, 8, 16, 100, 100, 0.001), // arm
                 new CompleteProfile(8, 12, 4, 16, 50, 50, 0.001)); // wrist
     }
+
     public static FollowJointProfiles gentle(CalgamesMech subsystem, Config goal) {
         return new FollowJointProfiles(
                 subsystem,
@@ -98,7 +99,6 @@ public class FollowJointProfiles extends Done {
                 new CompleteProfile(4, 4, 4, 8, 100, 100, 0.001), // arm
                 new CompleteProfile(8, 12, 4, 16, 50, 50, 0.001)); // wrist
     }
-
 
     FollowJointProfiles(
             CalgamesMech subsystem,
@@ -142,6 +142,11 @@ public class FollowJointProfiles extends Done {
     @Override
     public boolean isDone() {
         return profileDone() && atReference();
+    }
+
+    @Override
+    public double toGo() {
+        return 0;
     }
 
     /** The profile has reached the goal. */

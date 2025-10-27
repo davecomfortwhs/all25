@@ -17,7 +17,7 @@ public class LinearMechanismTest {
     /** Show that the limits have effect. */
     @Test
     void testLimits() {
-        Feedforward100 ff = Feedforward100.makeSimple();
+        Feedforward100 ff = Feedforward100.makeSimple(logger);
         MockBareMotor motor = new MockBareMotor(ff);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         double gearRatio = 1;
@@ -57,7 +57,7 @@ public class LinearMechanismTest {
     /** Same cases as above, but unlimited */
     @Test
     void testUnlimited() {
-        Feedforward100 ff = Feedforward100.makeSimple();
+        Feedforward100 ff = Feedforward100.makeSimple(logger);
         MockBareMotor motor = new MockBareMotor(ff);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         double gearRatio = 1;

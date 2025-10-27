@@ -10,6 +10,7 @@ public class RRDynamics {
     /** Length of link 1 */
     private final double l1;
     /** Length of link 2 */
+    @SuppressWarnings("unused")
     private final double l2;
     /** Distance from q1 to the link 1 center of mass. */
     private final double lc1;

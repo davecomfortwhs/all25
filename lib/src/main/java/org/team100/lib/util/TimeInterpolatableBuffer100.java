@@ -44,8 +44,9 @@ public class TimeInterpolatableBuffer100<T extends Interpolatable<T>> {
      * Remove stale entries and add the new one.
      */
     public void put(double timeS, T value) {
-        if (DEBUG)
-            Util.printf("put %f %s\n", timeS, value);
+        if (DEBUG) {
+            System.out.printf("put %f %s\n", timeS, value);
+        }
         try {
             // wait for in-progress double-reads
             m_lock.readLock().lock();
@@ -68,8 +69,9 @@ public class TimeInterpolatableBuffer100<T extends Interpolatable<T>> {
      * Remove all entries and add the new one.
      */
     public void reset(double timeS, T value) {
-        if (DEBUG)
-            Util.printf("reset %f %s\n", timeS, value);
+        if (DEBUG) {
+            System.out.printf("reset %f %s\n", timeS, value);
+        }
         try {
             // wait for in-progress double-reads
             m_lock.readLock().lock();
@@ -87,8 +89,9 @@ public class TimeInterpolatableBuffer100<T extends Interpolatable<T>> {
         // Special case for when the requested time is the same as a sample
         T nowEntry = m_pastSnapshots.get(timeSeconds);
         if (nowEntry != null) {
-            if (DEBUG)
-                Util.printf("record for now %.2f\n", timeSeconds);
+            if (DEBUG) {
+                System.out.printf("record for now %.2f\n", timeSeconds);
+            }
             return nowEntry;
         }
         Entry<Double, T> topBound = null;
@@ -120,8 +123,9 @@ public class TimeInterpolatableBuffer100<T extends Interpolatable<T>> {
         double timeSinceBottom = timeSeconds - bottomBound.getKey();
         double timeSpan = topBound.getKey() - bottomBound.getKey();
         double timeFraction = timeSinceBottom / timeSpan;
-        if (DEBUG)
-            Util.printf("interpolate %f\n", timeFraction);
+        if (DEBUG) {
+            System.out.printf("interpolate %f\n", timeFraction);
+        }
         return bottomBound.getValue().interpolate(topBound.getValue(), timeFraction);
     }
 

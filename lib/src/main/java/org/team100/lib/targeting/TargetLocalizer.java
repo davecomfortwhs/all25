@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.team100.lib.util.Util;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -15,6 +13,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 public class TargetLocalizer {
     private static final boolean DEBUG = false;
+    // 10/20/25 Joel set this to zero to fix the tests.
+    // please fix the tests before changing it back.
+    // private static final double OBJ_GROUND_OFFSET = 0.12;
+    private static final double OBJ_GROUND_OFFSET = 0.0;
 
     /**
      * Converts camera-relative sights to field relative translations.
@@ -26,13 +28,15 @@ public class TargetLocalizer {
             Pose2d robotPose,
             Transform3d cameraInRobotCoordinates,
             Rotation3d[] sights) {
-        if (DEBUG)
-            Util.printf("camera rots\n");
+        if (DEBUG) {
+            System.out.print("camera rots\n");
+        }
 
         ArrayList<Translation2d> Tnotes = new ArrayList<>();
         for (Rotation3d note : sights) {
-            if (DEBUG)
-                Util.printf("rotation %s\n", note);
+            if (DEBUG) {
+                System.out.printf("rotation %s\n", note);
+            }
             cameraRotToFieldRelative(
                     robotPose,
                     cameraInRobotCoordinates,
@@ -55,8 +59,9 @@ public class TargetLocalizer {
         Optional<Translation2d> robotRelative = TargetLocalizer
                 .sightToRobotRelative(cameraInRobotCoordinates, note);
         if (robotRelative.isEmpty()) {
-            if (DEBUG)
-                Util.printf("empty\n");
+            if (DEBUG) {
+                System.out.print("empty\n");
+            }
             return Optional.empty();
         }
         return Optional.of(TargetLocalizer.robotRelativeToFieldRelative(
@@ -92,17 +97,19 @@ public class TargetLocalizer {
      */
     public static Optional<Translation2d> sightInRobotCoordsToTranslation2d(
             Transform3d robotRelativeSight) {
-        double h = robotRelativeSight.getZ();
+        double h = robotRelativeSight.getZ() - OBJ_GROUND_OFFSET;
         if (h <= 0) {
-            if (DEBUG)
-                Util.printf("camera is below the floor %f\n", h);
+            if (DEBUG) {
+                System.out.printf("camera is below the floor %f\n", h);
+            }
             return Optional.empty();
         }
         double yaw = robotRelativeSight.getRotation().getZ();
         double pitch = robotRelativeSight.getRotation().getY();
         if (pitch <= 0) {
-            if (DEBUG)
-                Util.printf("target is above the horizon %f\n", pitch);
+            if (DEBUG) {
+                System.out.printf("target is above the horizon %f\n", pitch);
+            }
             return Optional.empty();
         }
         double d = h / Math.tan(pitch);

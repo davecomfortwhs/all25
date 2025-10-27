@@ -29,7 +29,7 @@ class GyroFilterTest {
             double x = f.calculate(bias);
             yaw += x * dt;
             if (PRINT)
-                Util.printf("%5.3f %5.3f %5.3f\n", t, x, yaw);
+                System.out.printf("%5.3f %5.3f %5.3f\n", t, x, yaw);
         }
     }
 

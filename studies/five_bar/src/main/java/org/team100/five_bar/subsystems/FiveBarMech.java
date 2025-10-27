@@ -17,8 +17,9 @@ import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.Falcon6Motor;
 import org.team100.lib.motor.MotorPhase;
+import org.team100.lib.motor.NeutralMode;
 import org.team100.lib.motor.SimulatedBareMotor;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -73,8 +74,8 @@ public class FiveBarMech extends SubsystemBase {
         LoggerFactory loggerP5 = logger.name("p5");
         switch (Identity.instance) {
             case COMP_BOT -> {
-                Falcon6Motor motorP1 = makeMotor(loggerP1, 1);
-                Falcon6Motor motorP5 = makeMotor(loggerP5, 2);
+                Falcon6Motor motorP1 = makeMotor(loggerP1, new CanId(1));
+                Falcon6Motor motorP5 = makeMotor(loggerP5, new CanId(2));
                 m_motorP1 = motorP1;
                 m_motorP5 = motorP5;
 
@@ -133,26 +134,26 @@ public class FiveBarMech extends SubsystemBase {
 
     /** Update position by adding. */
     public void add(double p1, double p5) {
-        double q1 = m_mechP1.getPositionRad().orElseThrow() + p1;
-        double q5 = m_mechP5.getPositionRad().orElseThrow() + p5;
+        double q1 = m_mechP1.getWrappedPositionRad() + p1;
+        double q5 = m_mechP5.getWrappedPositionRad() + p5;
         setPosition(q1, q5);
     }
 
     /** Set position goal, motionless. */
     public void setPosition(double p1, double p5) {
         if (DEBUG)
-            Util.printf("FiveBarMech.setPosition %f %f\n", p1, p5);
+            System.out.printf("FiveBarMech.setPosition %f %f\n", p1, p5);
         if (!feasible(p1, p5))
             return;
-        m_mechP1.setPosition(p1, 0, 0, 0);
-        m_mechP5.setPosition(p5, 0, 0, 0);
+        m_mechP1.setUnwrappedPosition(p1, 0, 0, 0);
+        m_mechP5.setUnwrappedPosition(p5, 0, 0, 0);
     }
 
     public JointPositions getJointPositions() {
-        double q1 = m_mechP1.getPositionRad().orElseThrow();
-        double q5 = m_mechP5.getPositionRad().orElseThrow();
+        double q1 = m_mechP1.getWrappedPositionRad();
+        double q5 = m_mechP5.getWrappedPositionRad();
         if (DEBUG)
-            Util.printf("joint positions %f %f\n", q1, q5);
+            System.out.printf("joint positions %f %f\n", q1, q5);
         return FiveBarKinematics.forward(SCENARIO, q1, q5);
     }
 
@@ -191,10 +192,11 @@ public class FiveBarMech extends SubsystemBase {
 
     //////////////////////
 
-    private Falcon6Motor makeMotor(LoggerFactory logger, int canId) {
+    private Falcon6Motor makeMotor(LoggerFactory logger, CanId canId) {
         return new Falcon6Motor(
                 logger,
                 canId,
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,
@@ -213,8 +215,8 @@ public class FiveBarMech extends SubsystemBase {
      * cycle (gently) to the end of travel before pushing the "home" button.
      */
     private void setHomePosition() {
-        m_motorP1.setEncoderPositionRad(Q1_MAX);
-        m_motorP5.setEncoderPositionRad(Q5_MIN);
+        m_motorP1.setUnwrappedEncoderPositionRad(Q1_MAX);
+        m_motorP5.setUnwrappedEncoderPositionRad(Q5_MIN);
         // TODO: use the sensor?
         // m_sensorP1.setPosition(Math.PI/2);
         // m_sensorP5.setPosition(Math.PI);

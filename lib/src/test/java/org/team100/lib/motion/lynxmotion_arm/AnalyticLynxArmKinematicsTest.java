@@ -8,7 +8,7 @@ import java.util.OptionalDouble;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.GeometryUtil;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,7 +27,7 @@ public class AnalyticLynxArmKinematicsTest {
         // figure out the twist axis
         Rotation3d r = new Rotation3d(Math.PI / 2, Math.PI / 2, Math.PI / 2);
         if (DEBUG)
-            System.out.printf("r %s\n", Util.rotStr(r));
+            System.out.printf("r %s\n", StrUtil.rotStr(r));
 
     }
 
@@ -42,25 +42,25 @@ public class AnalyticLynxArmKinematicsTest {
             System.out.printf("q %s\n", q);
         LynxArmPose p = k.forward(q);
         if (DEBUG) {
-            System.out.printf("p1 %s\n", Util.poseStr(p.p1()));
-            System.out.printf("p2 %s\n", Util.poseStr(p.p2()));
-            System.out.printf("p3 %s\n", Util.poseStr(p.p3()));
-            System.out.printf("p4 %s\n", Util.poseStr(p.p4()));
-            System.out.printf("p5 %s\n", Util.poseStr(p.p5()));
-            System.out.printf("p6 %s\n", Util.poseStr(p.p6()));
+            System.out.printf("p1 %s\n", StrUtil.poseStr(p.p1()));
+            System.out.printf("p2 %s\n", StrUtil.poseStr(p.p2()));
+            System.out.printf("p3 %s\n", StrUtil.poseStr(p.p3()));
+            System.out.printf("p4 %s\n", StrUtil.poseStr(p.p4()));
+            System.out.printf("p5 %s\n", StrUtil.poseStr(p.p5()));
+            System.out.printf("p6 %s\n", StrUtil.poseStr(p.p6()));
         }
         // the difference in joint poses here produces a pure pitch
         // which does not match my intuition (that the joint axis would be rotated)
         Rotation3d r = p.p3().getRotation().minus(p.p2().getRotation());
         if (DEBUG)
-            System.out.printf("r %s\n", Util.rotStr(r));
+            System.out.printf("r %s\n", StrUtil.rotStr(r));
         Translation3d t = new Translation3d(1, 0, 0);
         Vector<N3> v2 = t.rotateBy(p.p2().getRotation()).toVector();
         Vector<N3> v3 = t.rotateBy(p.p3().getRotation()).toVector();
         Vector<N3> axis = Vector.cross(v2, v3);
         Rotation3d axisR = new Rotation3d(axis);
         if (DEBUG)
-            System.out.printf("axisR %s\n", Util.rotStr(axisR));
+            System.out.printf("axisR %s\n", StrUtil.rotStr(axisR));
         Translation3d tR = new Translation3d(axis);
         if (DEBUG)
             System.out.printf("tR %s\n", tR);
@@ -84,7 +84,7 @@ public class AnalyticLynxArmKinematicsTest {
             // wrist should be pointing down the whole time
             q = k.inverse(q, lerp);
             if (DEBUG)
-                System.out.printf("q %s\n", Util.poseStr(lerp));
+                System.out.printf("q %s\n", StrUtil.poseStr(lerp));
         }
     }
 
@@ -101,6 +101,7 @@ public class AnalyticLynxArmKinematicsTest {
         LynxArmConfig q0 = new LynxArmConfig(0, 0, 0, 0, 0);
 
         // this does indeed produce an error
+        @SuppressWarnings("unused")
         LynxArmConfig q = k.inverse(q0, p);
 
         Translation2d translation = p.toPose2d().getTranslation();

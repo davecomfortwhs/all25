@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.geometry.Pose2dWithMotion.MotionDirection;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.TestLoggerFactory;
+import org.team100.lib.logging.primitive.TestPrimitiveLogger;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
@@ -14,11 +17,12 @@ class YawRateConstraintTest {
     // for testing, use the aboslute maximum. This shouldn't be used in a real
     // robot.
     private static final double YAW_RATE_SCALE = 1.0;
+    private static final LoggerFactory logger = new TestLoggerFactory(new TestPrimitiveLogger());
 
     @Test
     void testSpin() {
         // one radian/m in place i.e. no constraint
-        YawRateConstraint c = new YawRateConstraint(SwerveKinodynamicsFactory.forTest(),
+        YawRateConstraint c = new YawRateConstraint(logger, SwerveKinodynamicsFactory.forTest(),
                 YAW_RATE_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
                 new Pose2d(), new MotionDirection(0, 0, 1), 0, 0);
@@ -35,7 +39,7 @@ class YawRateConstraintTest {
     void testNormal() {
         // towards +x, 1 rad/m, 1 m/s wheel -> 1 rad/s limit => 2.8 m/s (which violates
         // the linear constraint but it's ok)
-        YawRateConstraint c = new YawRateConstraint(SwerveKinodynamicsFactory.forTest(),
+        YawRateConstraint c = new YawRateConstraint(logger, SwerveKinodynamicsFactory.forTest(),
                 YAW_RATE_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
                 new Pose2d(),
@@ -47,7 +51,7 @@ class YawRateConstraintTest {
     @Test
     void testVelocity2() {
         // towards +x, 1 rad/m, 2 rad/s limit => 2 m/s
-        YawRateConstraint c = new YawRateConstraint(SwerveKinodynamicsFactory.forTest2(),
+        YawRateConstraint c = new YawRateConstraint(logger, SwerveKinodynamicsFactory.forTest2(),
                 YAW_RATE_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
                 new Pose2d(),
@@ -60,7 +64,7 @@ class YawRateConstraintTest {
     void testAccel() {
         // we should impose an accel limit, now that the trajectory builder doesn't
         // force omega to zero at the start.
-        YawRateConstraint c = new YawRateConstraint(SwerveKinodynamicsFactory.forTest(),
+        YawRateConstraint c = new YawRateConstraint(logger, SwerveKinodynamicsFactory.forTest(),
                 YAW_RATE_SCALE);
         // driving and spinning
         Pose2dWithMotion p = new Pose2dWithMotion(
@@ -78,7 +82,7 @@ class YawRateConstraintTest {
     void testAccel2() {
         // towards +x, 1 rad/m, 2 rad/s limit => 2 m/s
         double scale = 0.1;
-        YawRateConstraint c = new YawRateConstraint(SwerveKinodynamicsFactory.forRealisticTest(),
+        YawRateConstraint c = new YawRateConstraint(logger, SwerveKinodynamicsFactory.forRealisticTest(),
                 scale);
         Pose2dWithMotion p = new Pose2dWithMotion(
                 new Pose2d(),

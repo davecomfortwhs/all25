@@ -11,20 +11,16 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.gyro.Gyro;
 import org.team100.lib.gyro.MockGyro;
-import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.TestLoggerFactory;
-import org.team100.lib.logging.primitive.TestPrimitiveLogger;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePosition100;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePositions;
-import org.team100.lib.motion.drivetrain.state.SwerveModuleState100;
-import org.team100.lib.motion.drivetrain.state.SwerveModuleStates;
-import org.team100.lib.util.Util;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePosition100;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
+import org.team100.lib.motion.swerve.module.state.SwerveModuleState100;
+import org.team100.lib.motion.swerve.module.state.SwerveModuleStates;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,7 +35,6 @@ import edu.wpi.first.wpilibj.DataLogManager;
 
 class SwerveDrivePoseEstimator100Test {
     private static final double DELTA = 0.001;
-    private static final LoggerFactory logger = new TestLoggerFactory(new TestPrimitiveLogger());
     private static final boolean DEBUG = false;
 
     private final SwerveModulePosition100 p0 = new SwerveModulePosition100(0, Optional.of(Rotation2d.kZero));
@@ -51,15 +46,15 @@ class SwerveDrivePoseEstimator100Test {
 
     private SwerveModulePositions positions;
 
-    private static void verify(double x, SwerveModel state) {
+    private static void verify(double x, ModelR3 state) {
         Pose2d estimate = state.pose();
         assertEquals(x, estimate.getX(), DELTA);
         assertEquals(0, estimate.getY(), DELTA);
         assertEquals(0, estimate.getRotation().getRadians(), DELTA);
     }
 
-    private static void verifyVelocity(double xV, SwerveModel state) {
-        FieldRelativeVelocity v = state.velocity();
+    private static void verifyVelocity(double xV, ModelR3 state) {
+        GlobalVelocityR3 v = state.velocity();
         assertEquals(xV, v.x(), DELTA);
     }
 
@@ -838,16 +833,17 @@ class SwerveDrivePoseEstimator100Test {
                         * (1 - rand.nextGaussian() * 0.05)
                         * 0.02;
                 Optional<Rotation2d> angle = moduleStatesAll[i].angle();
-                Rotation2d noise = new Rotation2d(rand.nextGaussian() * 0.005);
+                double noise = rand.nextGaussian() * 0.005;
                 if (angle.isPresent()) {
-                    positionsAll[i].angle = Optional.of(angle.get().plus(noise));
+                    positionsAll[i].unwrappedAngle = Optional.of(
+                            new Rotation2d(angle.get().getRadians() + noise));
                 } else {
-                    positionsAll[i].angle = Optional.empty();
+                    positionsAll[i].unwrappedAngle = Optional.empty();
                 }
             }
 
             ou.update(t);
-            SwerveModel xHat = estimator.apply(t);
+            ModelR3 xHat = estimator.apply(t);
 
             double error = groundTruthState.poseMeters.getTranslation().getDistance(xHat.pose().getTranslation());
             if (error > maxError) {
@@ -856,7 +852,7 @@ class SwerveDrivePoseEstimator100Test {
             errorSum += error;
 
             if (DEBUG) {
-                Util.printf("t %5.3f refX %5.3f refY %5.3f xhatX %5.3f xhatY %5.3f\n",
+                System.out.printf("t %5.3f refX %5.3f refY %5.3f xhatX %5.3f xhatY %5.3f\n",
                         t,
                         groundTruthState.poseMeters.getX(),
                         groundTruthState.poseMeters.getY(),

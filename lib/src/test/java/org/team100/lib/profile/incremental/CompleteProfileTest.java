@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
@@ -28,7 +27,7 @@ public class CompleteProfileTest {
         if (DEBUG) {
             for (double x = -10; x < 10; x += 0.01) {
                 Control100 sample = p.m_byDistance.get(x);
-                Util.printf("%12.4f %12.4f %12.4f\n", sample.x(), sample.v(), sample.a());
+                System.out.printf("%12.4f %12.4f %12.4f\n", sample.x(), sample.v(), sample.a());
             }
         }
     }
@@ -54,7 +53,7 @@ public class CompleteProfileTest {
         if (DEBUG) System.out.println("t, x, v, a");
         for (int i = 0; i < 100; ++i) {
             if (DEBUG)
-                Util.printf("%.3f, %.3f, %.3f, %.3f\n", 
+                System.out.printf("%.3f, %.3f, %.3f, %.3f\n", 
                 t, c.x(), c.v(), c.a());
             c = p.calculate(DT, c, goal);
             t += DT;
@@ -70,7 +69,7 @@ public class CompleteProfileTest {
         if (DEBUG) System.out.println("t, x, v, a");
         for (int i = 0; i < 100; ++i) {
             if (DEBUG)
-                Util.printf("%.3f, %.3f, %.3f, %.3f\n", 
+                System.out.printf("%.3f, %.3f, %.3f, %.3f\n", 
                 t, c.x(), c.v(), c.a());
             c = p.calculate(DT, c, goal);
             t += DT;
@@ -85,7 +84,7 @@ public class CompleteProfileTest {
         double t = 0;
         for (int i = 0; i < 100; ++i) {
             if (DEBUG)
-                Util.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
+                System.out.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
             c = p.calculate(DT, c, goal);
             t += DT;
         }
@@ -99,7 +98,7 @@ public class CompleteProfileTest {
         double t = 0;
         for (int i = 0; i < 100; ++i) {
             if (DEBUG)
-                Util.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
+                System.out.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
             c = p.calculate(DT, c, goal);
             t += DT;
         }
@@ -114,7 +113,7 @@ public class CompleteProfileTest {
         double t = 0;
         for (int i = 0; i < 100; ++i) {
             if (DEBUG)
-                Util.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
+                System.out.printf("%12.4f %12.4f %12.4f %12.4f\n", t, c.x(), c.v(), c.a());
             c = p.calculate(DT, c, goal);
             t += DT;
         }

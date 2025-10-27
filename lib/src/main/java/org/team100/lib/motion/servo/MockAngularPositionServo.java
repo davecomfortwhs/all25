@@ -1,9 +1,5 @@
 package org.team100.lib.motion.servo;
 
-import java.util.OptionalDouble;
-
-import org.team100.lib.reference.Setpoints1d;
-
 /**
  * This is just for tests and illustration.
  */
@@ -22,16 +18,21 @@ public class MockAngularPositionServo implements AngularPositionServo {
     }
 
     @Override
-    public void setPositionProfiled(double goalRad, double feedForwardTorqueNm) {
+    public void setPositionProfiled(double goalRad, double torqueNm) {
     }
 
     @Override
-    public void setPositionDirect(Setpoints1d setpoint, double feedForwardTorqueNm) {
+    public void setPositionDirect(double goalRad, double velocityRad_S, double torqueNm) {
     }
 
     @Override
-    public OptionalDouble getPosition() {
-        return null;
+    public double getWrappedPositionRad() {
+        return 0;
+    }
+
+    @Override
+    public double getUnwrappedPositionRad() {
+        return 0;
     }
 
     @Override
@@ -59,6 +60,10 @@ public class MockAngularPositionServo implements AngularPositionServo {
 
     @Override
     public void periodic() {
+    }
+
+    @Override
+    public void play(double freq) {
     }
 
 }

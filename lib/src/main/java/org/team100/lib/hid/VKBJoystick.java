@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.GenericHID;
  * Operator features are not implemented.
  * Command buttons are not implemented.
  */
-public class VKBJoystick implements DriverControl {
+public class VKBJoystick {
     private static final double DEADBAND = 0.02;
     private static final double EXPO = 0.5;
 
@@ -26,32 +26,22 @@ public class VKBJoystick implements DriverControl {
         m_hid = new GenericHID(0);
     }
 
-    @Override
-    public String getHIDName() {
-        return m_hid.getName();
-    }
-
-    @Override
     public boolean useReefLock() {
         return button(0); // trigger halfway down
     }
 
-    @Override
     public boolean test() {
         return button(3); // red thumb
     }
 
-    @Override
     public boolean resetRotation0() {
         return button(7); // "F1"
     }
 
-    @Override
     public boolean resetRotation180() {
         return button(8); // "F2"
     }
 
-    @Override
     public boolean button5() {
         // return button(5);
         return false;
@@ -61,15 +51,14 @@ public class VKBJoystick implements DriverControl {
      * Applies expo to each axis individually, works for "square" joysticks.
      * The square response of this joystick should be clamped by the consumer.
      */
-    @Override
-    public DriverControl.Velocity velocity() {
+
+    public Velocity velocity() {
         double dx = expo(deadband(-1.0 * clamp(axis(1), 1), DEADBAND, 1), EXPO);
         double dy = expo(deadband(-1.0 * clamp(axis(0), 1), DEADBAND, 1), EXPO);
         double dtheta = expo(deadband(clamp(axis(5), 1), DEADBAND, 1), EXPO);
-        return new DriverControl.Velocity(dx, dy, dtheta);
+        return new Velocity(dx, dy, dtheta);
     }
 
-    @Override
     public Rotation2d desiredRotation() {
         // POV 2 is the center one
         double desiredAngleDegrees = m_hid.getPOV(2);
@@ -79,7 +68,6 @@ public class VKBJoystick implements DriverControl {
         return Rotation2d.fromDegrees(-1.0 * desiredAngleDegrees);
     }
 
-    @Override
     public boolean toReef() {
         return button(8);
     }

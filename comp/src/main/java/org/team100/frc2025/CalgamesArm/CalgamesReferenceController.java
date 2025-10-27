@@ -1,9 +1,11 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.reference.SwerveReference;
-import org.team100.lib.util.Util;
+import org.team100.lib.controller.r3.ControllerR3;
+import org.team100.lib.controller.r3.FeedforwardControllerR3;
+import org.team100.lib.geometry.GlobalVelocityR3;
+import org.team100.lib.reference.r3.ReferenceR3;
+import org.team100.lib.state.ControlR3;
+import org.team100.lib.state.ModelR3;
 
 /**
  * Like the drivetrain ReferenceController, but it does
@@ -13,23 +15,30 @@ public class CalgamesReferenceController {
     private static final boolean DEBUG = false;
 
     private final CalgamesMech m_subsystem;
-    private final SwerveReference m_reference;
+    private final ControllerR3 m_controller;
+    private final ReferenceR3 m_reference;
 
-    public CalgamesReferenceController(CalgamesMech subsystem, SwerveReference reference) {
+    public CalgamesReferenceController(
+            CalgamesMech subsystem, ReferenceR3 reference) {
         m_subsystem = subsystem;
+        // very wide tolerance for now
+        m_controller = new FeedforwardControllerR3(1, 1, 1);
         m_reference = reference;
         m_reference.initialize(m_subsystem.getState());
     }
 
     public void execute() {
         try {
-            SwerveModel measurement = m_subsystem.getState();
-            SwerveModel current = m_reference.current();
-            SwerveModel error = current.minus(measurement);
-            if (DEBUG)
-                Util.printf("error %s\n", error);
-
-            SwerveControl next = m_reference.next();
+            ModelR3 measurement = m_subsystem.getState();
+            ModelR3 current = m_reference.current();
+            ControlR3 next = m_reference.next();
+            ModelR3 error = current.minus(measurement);
+            GlobalVelocityR3 fieldRelativeTarget = m_controller.calculate(
+                    measurement, current, next);
+            if (DEBUG) {
+                System.out.printf("CalgamesReferenceController.execute() error %s target %s\n",
+                        error, fieldRelativeTarget);
+            }
             m_subsystem.set(next);
         } catch (IllegalStateException ex) {
             // System.out.println(ex);
@@ -42,17 +51,19 @@ public class CalgamesReferenceController {
      * Trajectory is complete and controller error is within tolerance.
      * 
      * Since positional feedback is outboard, the "at reference" thing is unknown.
-     * 
-     * TODO: make it known.
      */
     public boolean isDone() {
-        return m_reference.done();// && m_controller.atReference();
+        return m_reference.done() && m_controller.atReference();
+    }
+
+    public boolean atReference() {
+        return m_controller.atReference();
     }
 
     /** Distance between the measurement and the goal. */
     public double toGo() {
-        SwerveModel goal = m_reference.goal();
-        SwerveModel measurement = m_subsystem.getState();
+        ModelR3 goal = m_reference.goal();
+        ModelR3 measurement = m_subsystem.getState();
         return goal.minus(measurement).translation().getNorm();
     }
 

@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import org.team100.lib.geometry.GeometryUtil;
 import org.team100.lib.optimization.NewtonsMethod;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
@@ -38,8 +37,6 @@ import edu.wpi.first.math.numbers.N6;
  * https://mymodelrobot.appspot.com/5629499534213120) or simulators (e.g.
  * Gazebo) to be that useful.
  * 
- * TODO: normalize the "axis" vector or complain if not normalized.
- * 
  * There exists SRDF, which specifies, among other things, group states, e.g.
  * home positions. I think SRDF is dead, but representing states seems fine;
  * the format is a map of joint names and values.
@@ -50,7 +47,9 @@ import edu.wpi.first.math.numbers.N6;
  */
 public class URDFRobot<Q extends Num> {
     private static final boolean DEBUG = false;
+    @SuppressWarnings("unused")
     private final String m_name;
+    @SuppressWarnings("unused")
     private final List<URDFLink> m_links;
     private final List<URDFJoint> m_joints;
     private final Nat<Q> m_qDim;
@@ -79,7 +78,6 @@ public class URDFRobot<Q extends Num> {
      * Solve inverse kinematics for all joints using Newton's method.
      * 
      * qDim indicates the dimensionality of the configuration space.
-     * TODO: get rid of qDim.
      * q0 is the initial (e.g. current) configuration.
      * 
      * the function, f, is the forward transform: it takes the joint
@@ -95,17 +93,13 @@ public class URDFRobot<Q extends Num> {
      * if not, then the "error" is between two tangent vectors whose origin is far
      * away.
      */
-    public  Map<String, Double> inverse(
+    public Map<String, Double> inverse(
             Vector<Q> q0,
             double dqLimit,
             String jointName,
             Pose3d goal) {
-        // if (DEBUG)
-        //     System.out.printf("\n\n*** inverse() q0 %s goal %s\n",
-        //             Util.vecStr(q0), Util.poseStr(goal));
         Function<Vector<Q>, Pose3d> fwd = q -> {
             Pose3d pose = forward(qMap(q)).get(jointName);
-            // System.out.printf("fwd() pose %s\n", Util.poseStr(pose));
             return pose;
         };
 
@@ -120,7 +114,6 @@ public class URDFRobot<Q extends Num> {
         double tolerance = 2e-3;
 
         // sometimes the solver seems to circle around the goal
-        // TODO: fix that
         // but it only happens in the middle of movements, when the
         // initial and goal are far apart.
 
@@ -143,10 +136,7 @@ public class URDFRobot<Q extends Num> {
 
         if (DEBUG) {
             long finishTime = System.nanoTime();
-            Util.printf("ET (ms): %6.3f\n",
-                    ((double) finishTime - startTime) / 1000000);
-            // System.out.printf("q0: %s\n", q0);
-            // System.out.printf("qVec: %s\n", qVec);
+            System.out.printf("ET (ms): %6.3f\n", ((double) finishTime - startTime) / 1000000);
         }
         return qMap(qVec);
     }
@@ -219,7 +209,6 @@ public class URDFRobot<Q extends Num> {
 
     /**
      * qDim needs to match the actual number of moveable joints.
-     * TODO: remove it.
      */
     public <QQ extends Num> Vector<QQ> minQ(Nat<QQ> qDim) {
         Vector<QQ> v = new Vector<>(qDim);
@@ -235,7 +224,6 @@ public class URDFRobot<Q extends Num> {
 
     /**
      * qDim needs to match the actual number of moveable joints.
-     * TODO: remove it.
      */
     public <QQ extends Num> Vector<QQ> maxQ(Nat<QQ> qDim) {
         Vector<QQ> v = new Vector<>(qDim);

@@ -98,7 +98,6 @@ public class AnalyticLynxArmKinematics implements LynxArmKinematics {
      * Solve the inverse kinematics for the given end-effector pose.
      * 
      * Ignores the initial config.
-     * TODO: use the initial config for singularities.
      * 
      * Refer to the diagram
      * https://docs.google.com/document/d/1B6vGPtBtnDSOpfzwHBflI8-nn98W9QvmrX78bon8Ajw
@@ -179,7 +178,7 @@ public class AnalyticLynxArmKinematics implements LynxArmKinematics {
             // twist.
             Rotation3d wrist3d = new Rotation3d(0, swingRelative3d.getY(), 0);
             Rotation3d twist3d = swingRelative3d.minus(wrist3d);
-            // System.out.printf("twist3d %s\n", Util.rotStr(twist3d));
+            // System.out.printf("twist3d %s\n", StrUtil.rotStr(twist3d));
             twist = OptionalDouble.of(twist3d.getX());
 
             if (MathUtil.isNear(-Math.PI / 2, endRotation.getY(), 0.01)) {
@@ -194,7 +193,7 @@ public class AnalyticLynxArmKinematics implements LynxArmKinematics {
                     // String.format("end rotation %s not equal to swing %s",
                     // endRotation2d, swingAngle));
                     // System.out.printf("end rotation %s not equal to swing %s for goal %s\n",
-                    // endRotation2d, swingAngle, Util.poseStr(end));
+                    // endRotation2d, swingAngle, StrUtil.poseStr(end));
                 }
             }
         }

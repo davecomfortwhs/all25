@@ -1,7 +1,5 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 import edu.wpi.first.math.MathUtil;
 
 /**
@@ -30,19 +28,18 @@ public class GearedRotaryPositionSensor implements RotaryPositionSensor {
     }
 
     @Override
-    public OptionalDouble getPositionRad() {
-        OptionalDouble opt = m_delegate.getPositionRad();
-        return opt.isPresent()
-                ? OptionalDouble.of(MathUtil.angleModulus(opt.getAsDouble() / m_ratio))
-                : OptionalDouble.empty();
+    public double getWrappedPositionRad() {
+        return MathUtil.angleModulus(getUnwrappedPositionRad());
     }
 
     @Override
-    public OptionalDouble getVelocityRad_S() {
-        OptionalDouble opt = m_delegate.getVelocityRad_S();
-        return opt.isPresent()
-                ? OptionalDouble.of(opt.getAsDouble() / m_ratio)
-                : OptionalDouble.empty();
+    public double getUnwrappedPositionRad() {
+        return m_delegate.getWrappedPositionRad() / m_ratio;
+    }
+
+    @Override
+    public double getVelocityRad_S() {
+        return m_delegate.getVelocityRad_S() / m_ratio;
     }
 
     @Override

@@ -1,8 +1,8 @@
 package frc.robot;
 
 import org.team100.five_bar.setups.SetupMech;
-import org.team100.lib.util.Memo;
-import org.team100.lib.util.Takt;
+import org.team100.lib.coherence.Cache;
+import org.team100.lib.coherence.Takt;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -32,8 +32,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         Takt.update();
-        Memo.resetAll();
-        Memo.updateAll();
+        Cache.refresh();
         CommandScheduler.getInstance().run();
         m_setup.run();
     }

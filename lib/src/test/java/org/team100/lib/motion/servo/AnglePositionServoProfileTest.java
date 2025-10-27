@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.config.Feedforward100;
-import org.team100.lib.controller.simple.Feedback100;
-import org.team100.lib.controller.simple.PIDFeedback;
+import org.team100.lib.controller.r1.Feedback100;
+import org.team100.lib.controller.r1.PIDFeedback;
 import org.team100.lib.encoder.MockRotaryPositionSensor;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
@@ -14,7 +14,7 @@ import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motor.MockBareMotor;
 import org.team100.lib.profile.incremental.IncrementalProfile;
 import org.team100.lib.profile.incremental.TrapezoidIncrementalProfile;
-import org.team100.lib.reference.IncrementalProfileReference1d;
+import org.team100.lib.reference.r1.IncrementalProfileReferenceR1;
 import org.team100.lib.testing.Timeless;
 
 class AnglePositionServoProfileTest implements Timeless {
@@ -24,13 +24,13 @@ class AnglePositionServoProfileTest implements Timeless {
     private final MockBareMotor motor;
     private final MockRotaryPositionSensor sensor;
     private final Feedback100 feedback2;
-    private final IncrementalProfileReference1d ref;
+    private final IncrementalProfileReferenceR1 ref;
     private final OnboardAngularPositionServo servo;
     // for calculating the trapezoidal integral
     double previousMotorSpeed = 0;
 
     public AnglePositionServoProfileTest() {
-        motor = new MockBareMotor(Feedforward100.makeSimple());
+        motor = new MockBareMotor(Feedforward100.makeSimple(logger));
         sensor = new MockRotaryPositionSensor();
         RotaryMechanism mech = new RotaryMechanism(
                 logger,
@@ -39,9 +39,9 @@ class AnglePositionServoProfileTest implements Timeless {
                 1,
                 Double.NEGATIVE_INFINITY,
                 Double.POSITIVE_INFINITY);
-        feedback2 = new PIDFeedback(logger, 1, 0, 0, true, 0.05, 1);
+        feedback2 = new PIDFeedback(logger, 1, 0, 0, false, 0.05, 1);
         IncrementalProfile profile = new TrapezoidIncrementalProfile(1, 1, 0.05);
-        ref = new IncrementalProfileReference1d(profile, 0.05, 0.05);
+        ref = new IncrementalProfileReferenceR1(profile, 0.05, 0.05);
         servo = new OnboardAngularPositionServo(logger, mech, ref, feedback2);
         servo.reset();
     }
@@ -86,7 +86,7 @@ class AnglePositionServoProfileTest implements Timeless {
             previousMotorSpeed = motor.velocity;
         }
         assertEquals(motorVelocity, motor.velocity, DELTA, "velocity");
-        assertEquals(setpointPosition, servo.m_setpoint.x(), DELTA, "setpoint position");
-        assertEquals(setpointVelocity, servo.m_setpoint.v(), DELTA, "setpoint velocity");
+        assertEquals(setpointPosition, servo.m_nextUnwrappedSetpoint.x(), DELTA, "setpoint position");
+        assertEquals(setpointVelocity, servo.m_nextUnwrappedSetpoint.v(), DELTA, "setpoint velocity");
     }
 }

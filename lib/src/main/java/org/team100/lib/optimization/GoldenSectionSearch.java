@@ -2,8 +2,6 @@ package org.team100.lib.optimization;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.team100.lib.util.Util;
-
 /**
  * Golden ratio search finds the minimum by testing points. If the function has
  * more than one local minimum, there's no guarantee it will find the global
@@ -63,7 +61,7 @@ public class GoldenSectionSearch {
             }
             i++;
             if (i > m_iterations) {
-                Util.warn("iteration limit exceeded");
+                System.out.println("WARNING: iteration limit exceeded");
                 return bottom;
             }
         }

@@ -14,13 +14,14 @@ import org.team100.lib.motion.five_bar.Scenario;
 import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motion.servo.AngularPositionServo;
 import org.team100.lib.motion.servo.OutboardAngularPositionServo;
-import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.Falcon6Motor;
 import org.team100.lib.motor.MotorPhase;
-import org.team100.lib.profile.incremental.Profile100;
-import org.team100.lib.profile.incremental.TrapezoidProfile100;
-import org.team100.lib.reference.IncrementalProfileReference1d;
-import org.team100.lib.reference.ProfileReference1d;
+import org.team100.lib.motor.NeutralMode;
+import org.team100.lib.profile.incremental.IncrementalProfile;
+import org.team100.lib.profile.incremental.TrapezoidIncrementalProfile;
+import org.team100.lib.reference.IncrementalProfileReferenceR1;
+import org.team100.lib.reference.ProfileReferenceR1;
+import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -69,13 +70,14 @@ public class FiveBarServo extends SubsystemBase {
         // zeros
         PIDConstants pid = new PIDConstants();
         Feedforward100 ff = Feedforward100.zero();
-        Profile100 profile = new TrapezoidProfile100(
+        IncrementalProfile profile = new TrapezoidIncrementalProfile(
                 maxVel, maxAccel, kPositionTolerance);
 
         LoggerFactory loggerP1 = logger.name("p1");
         Falcon6Motor motorP1 = new Falcon6Motor(
                 loggerP1,
-                1,
+                new CanId(1),
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,
@@ -91,7 +93,7 @@ public class FiveBarServo extends SubsystemBase {
                 0.0,
                 1.0);
 
-        ProfileReference1d refP1 = new IncrementalProfileReference1d(
+        ProfileReferenceR1 refP1 = new IncrementalProfileReferenceR1(
                 profile, POSITION_TOLERANCE, VELOCITY_TOLERANCE);
         m_servoP1 = new OutboardAngularPositionServo(
                 loggerP1,
@@ -101,7 +103,8 @@ public class FiveBarServo extends SubsystemBase {
         LoggerFactory loggerP5 = logger.name("p5");
         Falcon6Motor motorP5 = new Falcon6Motor(
                 loggerP5,
-                2,
+                new CanId(2),
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,
@@ -116,7 +119,7 @@ public class FiveBarServo extends SubsystemBase {
                 1.0,
                 0.0,
                 1.0);
-        ProfileReference1d refP5 = new IncrementalProfileReference1d(
+        ProfileReferenceR1 refP5 = new IncrementalProfileReferenceR1(
                 profile, POSITION_TOLERANCE, VELOCITY_TOLERANCE);
         m_servoP5 = new OutboardAngularPositionServo(
                 loggerP5,
@@ -130,8 +133,8 @@ public class FiveBarServo extends SubsystemBase {
     }
 
     public JointPositions getJointPositions() {
-        double q1 = m_servoP1.getPosition().orElse(0);
-        double q5 = m_servoP5.getPosition().orElse(0);
+        double q1 = m_servoP1.getWrappedPositionRad();
+        double q5 = m_servoP5.getWrappedPositionRad();
         return FiveBarKinematics.forward(SCENARIO, q1, q5);
     }
 

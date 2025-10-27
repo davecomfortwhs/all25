@@ -3,7 +3,6 @@ package org.team100.lib.optimization;
 import java.util.function.DoubleUnaryOperator;
 
 import org.team100.lib.util.Math100;
-import org.team100.lib.util.Util;
 
 /**
  * Very simple scalar bisection solver.
@@ -30,9 +29,10 @@ public class Bisection1d {
             double f_1,
             double tolerance,
             int iterations_left) {
-        if (Math100.DEBUG)
-            Util.printf("*************** i %d x_0 %.8f f_0 %.8f x_1 %.8f f_1 %.8f\n", iterations_left, x_0, f_0, x_1,
-                    f_1);
+        if (Math100.DEBUG) {
+            System.out.printf("*************** i %d x_0 %.8f f_0 %.8f x_1 %.8f f_1 %.8f\n",
+                    iterations_left, x_0, f_0, x_1, f_1);
+        }
         if (iterations_left < 0) {
             // ran out of time
             return 1.0;
@@ -43,12 +43,12 @@ public class Bisection1d {
         }
         if (Math.abs(f_0) < tolerance) {
             if (Math100.DEBUG)
-                Util.println("left edge is the solution");
+                System.out.println("left edge is the solution");
             return x_0;
         }
         if (Math.abs(f_1) < tolerance) {
             if (Math100.DEBUG)
-                Util.println("right edge is the solution");
+                System.out.println("right edge is the solution");
             return x_1;
         }
         // halfway between x_0 and x_1.
@@ -56,12 +56,14 @@ public class Bisection1d {
 
         double x_guess = (x_1 - x_0) * s_guess + x_0;
         double f_guess = func.applyAsDouble(x_guess);
-        if (Math100.DEBUG)
-            Util.printf("************* guess f(%.8f) = %.8f\n", x_guess, f_guess);
+        if (Math100.DEBUG) {
+            System.out.printf("************* guess f(%.8f) = %.8f\n", x_guess, f_guess);
+        }
 
         if (Math.abs(f_guess) < tolerance) {
-            if (Math100.DEBUG)
-                Util.printf("guess %.8f less than tolerance %.8f\n", f_guess, tolerance);
+            if (Math100.DEBUG) {
+                System.out.printf("guess %.8f less than tolerance %.8f\n", f_guess, tolerance);
+            }
             return s_guess;
         }
 

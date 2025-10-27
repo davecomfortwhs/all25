@@ -2,10 +2,10 @@ package frc.robot;
 
 import org.team100.lib.geometry.GeometryUtil;
 import org.team100.lib.motion.lynxmotion_arm.LynxArmConfig;
-import org.team100.lib.profile.timed.JerkLimitedProfile100;
+import org.team100.lib.profile.timed.JerkLimitedTimedProfile;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,7 +20,7 @@ public class MoveCommand extends Command {
     private static final boolean DEBUG = false;
     private final LynxArm m_arm;
     private final Pose3d m_goal;
-    private final JerkLimitedProfile100 m_profile;
+    private final JerkLimitedTimedProfile m_profile;
     private final Timer m_timer;
 
     private Pose3d m_start;
@@ -31,7 +31,7 @@ public class MoveCommand extends Command {
     public MoveCommand(LynxArm arm, Pose3d goal, double velocity) {
         m_arm = arm;
         m_goal = goal;
-        m_profile = new JerkLimitedProfile100(velocity, 1, 10, true);
+        m_profile = new JerkLimitedTimedProfile(velocity, 1, 10, true);
         m_timer = new Timer();
         addRequirements(arm);
     }
@@ -49,8 +49,8 @@ public class MoveCommand extends Command {
         m_timer.restart();
         m_done = false;
         if (DEBUG) {
-            System.out.printf("start %s\n", Util.poseStr(m_start));
-            System.out.printf("end %s\n", Util.poseStr(m_goal));
+            System.out.printf("start %s\n", StrUtil.poseStr(m_start));
+            System.out.printf("end %s\n", StrUtil.poseStr(m_goal));
         }
     }
 
@@ -67,7 +67,7 @@ public class MoveCommand extends Command {
         Pose3d measurement = m_arm.getPosition().p6();
         if (DEBUG) {
             System.out.printf("Goal %s Setpoint %s Measurement %s\n",
-                    Util.poseStr(m_goal), Util.poseStr(setpoint), Util.poseStr(measurement));
+                    StrUtil.poseStr(m_goal), StrUtil.poseStr(setpoint), StrUtil.poseStr(measurement));
         }
         double togo = setpoint.getTranslation().getDistance(m_goal.getTranslation());
         Rotation3d rotTogo = setpoint.getRotation().minus(m_goal.getRotation());
@@ -87,8 +87,8 @@ public class MoveCommand extends Command {
         }
         m_arm.setPosition(setpoint);
         if (DEBUG) {
-            System.out.printf("setpoint %s\n", Util.poseStr(setpoint));
-            System.out.printf("goal %s\n", Util.poseStr(m_goal));
+            System.out.printf("setpoint %s\n", StrUtil.poseStr(setpoint));
+            System.out.printf("goal %s\n", StrUtil.poseStr(m_goal));
             LynxArmConfig measuredConfig = m_arm.getMeasuredConfig();
             System.out.printf("measured config %s\n", measuredConfig.str());
             LynxArmConfig commandedConfig = m_arm.getInverse(setpoint);

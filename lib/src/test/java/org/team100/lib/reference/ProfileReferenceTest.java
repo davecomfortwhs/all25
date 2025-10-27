@@ -3,9 +3,10 @@ package org.team100.lib.reference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
 import org.team100.lib.profile.HolonomicProfile;
+import org.team100.lib.reference.r3.ProfileReferenceR3;
+import org.team100.lib.state.ControlR3;
+import org.team100.lib.state.ModelR3;
 import org.team100.lib.testing.Timeless;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,26 +17,26 @@ public class ProfileReferenceTest implements Timeless {
 
     @Test
     void testSimple() {
-        SwerveModel measurement = new SwerveModel(new Pose2d(0, 0, Rotation2d.kZero));
-        SwerveModel goal = new SwerveModel(new Pose2d(1, 0, Rotation2d.kZero));
+        ModelR3 measurement = new ModelR3(new Pose2d(0, 0, Rotation2d.kZero));
+        ModelR3 goal = new ModelR3(new Pose2d(1, 0, Rotation2d.kZero));
         HolonomicProfile hp = HolonomicProfile.trapezoidal(1, 1, 0.01, 1, 1, 0.01);
-        ProfileReference r = new ProfileReference(hp, "test");
+        ProfileReferenceR3 r = new ProfileReferenceR3(hp, "test");
         r.setGoal(goal);
         r.initialize(measurement);
         {
-            SwerveModel c = r.current();
+            ModelR3 c = r.current();
             assertEquals(0, c.velocity().x(), DELTA);
             assertEquals(0, c.pose().getX(), DELTA);
-            SwerveControl n = r.next();
+            ControlR3 n = r.next();
             assertEquals(0.02, n.velocity().x(), DELTA);
             assertEquals(0, n.pose().getX(), DELTA);
         }
         // no time step, nothing changes
         {
-            SwerveModel c = r.current();
+            ModelR3 c = r.current();
             assertEquals(0, c.velocity().x(), DELTA);
             assertEquals(0, c.pose().getX(), DELTA);
-            SwerveControl n = r.next();
+            ControlR3 n = r.next();
             assertEquals(0.02, n.velocity().x(), DELTA);
             // x is very small but not zero
             assertEquals(0.0002, n.pose().getX(), 0.00001);
@@ -43,10 +44,10 @@ public class ProfileReferenceTest implements Timeless {
         // stepping time gets the next references
         stepTime();
         {
-            SwerveModel c = r.current();
+            ModelR3 c = r.current();
             assertEquals(0.02, c.velocity().x(), DELTA);
             assertEquals(0, c.pose().getX(), DELTA);
-            SwerveControl n = r.next();
+            ControlR3 n = r.next();
             assertEquals(0.04, n.velocity().x(), DELTA);
             assertEquals(0.00078, n.pose().getX(), DELTA);
         }
@@ -55,10 +56,10 @@ public class ProfileReferenceTest implements Timeless {
             stepTime();
         }
         {
-            SwerveModel c = r.current();
+            ModelR3 c = r.current();
             assertEquals(0, c.velocity().x(), DELTA);
             assertEquals(1, c.pose().getX(), DELTA);
-            SwerveControl n = r.next();
+            ControlR3 n = r.next();
             assertEquals(0, n.velocity().x(), DELTA);
             assertEquals(1, n.pose().getX(), DELTA);
         }

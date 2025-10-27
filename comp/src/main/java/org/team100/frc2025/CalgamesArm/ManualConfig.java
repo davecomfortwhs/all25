@@ -2,24 +2,24 @@ package org.team100.frc2025.CalgamesArm;
 
 import java.util.function.Supplier;
 
-import org.team100.lib.hid.DriverControl;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.hid.Velocity;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointVelocities;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Use the operator control to "fly" the arm around in config space. */
 public class ManualConfig extends Command {
 
-    private final Supplier<DriverControl.Velocity> m_input;
+    private final Supplier<Velocity> m_input;
     private final CalgamesMech m_subsystem;
 
     private Config m_config;
     private JointVelocities m_prev;
 
     public ManualConfig(
-            Supplier<DriverControl.Velocity> input,
+            Supplier<Velocity> input,
             CalgamesMech subsystem) {
         m_input = input;
         m_subsystem = subsystem;
@@ -35,7 +35,7 @@ public class ManualConfig extends Command {
     @Override
     public void execute() {
         // input is [-1, 1]
-        DriverControl.Velocity input = m_input.get();
+        Velocity input = m_input.get();
         final double dt = 0.02;
         // control is velocity.
         // velocity in m/s and rad/s

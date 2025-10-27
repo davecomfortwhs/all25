@@ -3,9 +3,9 @@ package org.team100.lib.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.TargetUtil;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -47,7 +47,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotion() {
         // at the origin moving 1 m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(1, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(1, 0, 0));
         // target is 1m to the left
         Translation2d target = new Translation2d(0, 1);
         // so it appears to move clockwise
@@ -57,7 +57,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionFaster() {
         // at the origin moving 2 m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(2, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(2, 0, 0));
         // target is 1m to the left
         Translation2d target = new Translation2d(0, 1);
         // so it appears to move clockwise
@@ -67,7 +67,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionElsewhere() {
         // somewhere else, moving 1 m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(1, 1, new Rotation2d()), new FieldRelativeVelocity(1, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(1, 1, new Rotation2d()), new GlobalVelocityR3(1, 0, 0));
         // target is 1m to the left
         Translation2d target = new Translation2d(1, 2);
         // so it appears to move clockwise
@@ -77,7 +77,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionReverse() {
         // at the origin, moving 1m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(1, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(1, 0, 0));
         // target is 1m to the right
         Translation2d target = new Translation2d(0, -1);
         // so it appears to move counterclockwise
@@ -87,7 +87,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionAhead() {
         // at the origin, moving 1m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(1, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(1, 0, 0));
         // target is dead ahead
         Translation2d target = new Translation2d(2, 0);
         // no apparent motion
@@ -97,7 +97,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionOblique() {
         // at the origin, moving 1m/s +x
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(1, 0, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(1, 0, 0));
         // target is at 45
         Translation2d target = new Translation2d(1, 1);
         // apparent motion is slower
@@ -107,7 +107,7 @@ class TargetUtilTest {
     @Test
     void testTargetMotionY() {
         // at the origin, moving 1m/s +y
-        SwerveModel state = new SwerveModel(new Pose2d(), new FieldRelativeVelocity(0, 1, 0));
+        ModelR3 state = new ModelR3(new Pose2d(), new GlobalVelocityR3(0, 1, 0));
         // target is dead ahead
         Translation2d target = new Translation2d(1, 0);
         // target moves the other way
@@ -117,9 +117,9 @@ class TargetUtilTest {
     @Test
     void testTargetMotionYReversed() {
         // in front of the origin, facing back to it, moving 1m/s +y,
-        SwerveModel state = new SwerveModel(
+        ModelR3 state = new ModelR3(
                 new Pose2d(1, 0, Rotation2d.kPi),
-                new FieldRelativeVelocity(0, 1, 0));
+                new GlobalVelocityR3(0, 1, 0));
         // target is dead ahead
         Translation2d target = new Translation2d(0, 0);
         // target appears to move counterclockwise

@@ -6,56 +6,58 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.team100.lib.commands.Done;
+import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.config.ElevatorUtil.ScoringLevel;
 import org.team100.lib.config.Feedforward100;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.encoder.AS5048RotaryPositionSensor;
 import org.team100.lib.encoder.CombinedRotaryPositionSensor;
 import org.team100.lib.encoder.EncoderDrive;
 import org.team100.lib.encoder.GearedRotaryPositionSensor;
 import org.team100.lib.encoder.ProxyRotaryPositionSensor;
 import org.team100.lib.encoder.RotaryPositionSensor;
-import org.team100.lib.encoder.SimulatedBareEncoder;
-import org.team100.lib.encoder.SimulatedRotaryPositionSensor;
-import org.team100.lib.encoder.Talon6Encoder;
+import org.team100.lib.encoder.ctre.Talon6Encoder;
+import org.team100.lib.encoder.sim.SimulatedBareEncoder;
+import org.team100.lib.encoder.sim.SimulatedRotaryPositionSensor;
+import org.team100.lib.encoder.wpi.AS5048RotaryPositionSensor;
+import org.team100.lib.geometry.GlobalAccelerationR3;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.HolonomicPose2d;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ConfigLogger;
-import org.team100.lib.logging.LoggerFactory.FieldRelativeAccelerationLogger;
-import org.team100.lib.logging.LoggerFactory.FieldRelativeVelocityLogger;
+import org.team100.lib.logging.LoggerFactory.GlobalAccelerationR3Logger;
+import org.team100.lib.logging.LoggerFactory.GlobalVelocityR3Logger;
 import org.team100.lib.logging.LoggerFactory.JointAccelerationsLogger;
 import org.team100.lib.logging.LoggerFactory.JointForceLogger;
 import org.team100.lib.logging.LoggerFactory.JointVelocitiesLogger;
 import org.team100.lib.logging.LoggerFactory.Pose2dLogger;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeAcceleration;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.kinematics.AnalyticalJacobian;
-import org.team100.lib.motion.kinematics.ElevatorArmWristKinematics;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointForce;
-import org.team100.lib.motion.kinematics.JointVelocities;
 import org.team100.lib.motion.mechanism.LinearMechanism;
 import org.team100.lib.motion.mechanism.RotaryMechanism;
-import org.team100.lib.motor.Kraken6Motor;
+import org.team100.lib.motion.prr.AnalyticalJacobian;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.ElevatorArmWristKinematics;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointForce;
+import org.team100.lib.motion.prr.JointVelocities;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode;
-import org.team100.lib.motor.SimulatedBareMotor;
+import org.team100.lib.motor.ctre.Kraken6Motor;
+import org.team100.lib.motor.sim.SimulatedBareMotor;
+import org.team100.lib.music.Music;
+import org.team100.lib.state.ControlR3;
+import org.team100.lib.state.ModelR3;
+import org.team100.lib.subsystems.SubsystemR3;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
-import org.team100.lib.util.Util;
+import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class CalgamesMech extends SubsystemBase {
+public class CalgamesMech extends SubsystemBase implements Music, SubsystemR3 {
     private static final boolean DEBUG = false;
     private boolean DISABLED = false;
     ////////////////////////////////////////////////////////
@@ -79,6 +81,7 @@ public class CalgamesMech extends SubsystemBase {
     private static final Pose2d L2 = new Pose2d(0.56, 0.54, rad(2.0));
     private static final Pose2d L3 = new Pose2d(0.94, 0.56, rad(1.7));
     private static final Pose2d L4 = new Pose2d(1.57, 0.54, rad(2.0));
+    private static final Pose2d L4_BACK = new Pose2d(1.92, -.54, rad(.75));
     private static final Pose2d ALGAE_L2 = new Pose2d(0.85, 0.7, rad(1.5));
     private static final Pose2d ALGAE_L3 = new Pose2d(1.15, 0.7, rad(1.5));
     private static final Pose2d BARGE = new Pose2d(2.3, -0.5, rad(-1.5));
@@ -98,8 +101,8 @@ public class CalgamesMech extends SubsystemBase {
     private final JointForceLogger m_log_jointF;
 
     private final Pose2dLogger m_log_pose;
-    private final FieldRelativeVelocityLogger m_log_cartesianV;
-    private final FieldRelativeAccelerationLogger m_log_cartesianA;
+    private final GlobalVelocityR3Logger m_log_cartesianV;
+    private final GlobalAccelerationR3Logger m_log_cartesianA;
 
     private final LinearMechanism m_elevatorFront;
     private final LinearMechanism m_elevatorBack;
@@ -110,7 +113,8 @@ public class CalgamesMech extends SubsystemBase {
     /** Home pose is Config(0,0,0), from forward kinematics. */
     private final Pose2d m_home;
 
-    public CalgamesMech(LoggerFactory log,
+    public CalgamesMech(
+            LoggerFactory log,
             double armLength,
             double wristLength) {
         LoggerFactory parent = log.type(this);
@@ -123,7 +127,7 @@ public class CalgamesMech extends SubsystemBase {
 
         m_home = m_kinematics.forward(HOME);
 
-        m_transit = new MechTrajectories(this, m_kinematics, m_jacobian);
+        m_transit = new MechTrajectories(parent, this, m_kinematics, m_jacobian);
 
         LoggerFactory jointLog = parent.name("joints");
         m_log_config = jointLog.logConfig(Level.DEBUG, "config");
@@ -133,13 +137,14 @@ public class CalgamesMech extends SubsystemBase {
 
         LoggerFactory cartesianLog = parent.name("cartesian");
         m_log_pose = cartesianLog.pose2dLogger(Level.DEBUG, "pose");
-        m_log_cartesianV = cartesianLog.fieldRelativeVelocityLogger(Level.DEBUG, "velocity");
-        m_log_cartesianA = cartesianLog.fieldRelativeAccelerationLogger(Level.DEBUG, "accel");
+        m_log_cartesianV = cartesianLog.globalVelocityR3Logger(Level.DEBUG, "velocity");
+        m_log_cartesianA = cartesianLog.globalAccelerationR3Logger(Level.DEBUG, "accel");
 
         LoggerFactory elevatorbackLog = parent.name("elevatorBack");
         LoggerFactory elevatorfrontLog = parent.name("elevatorFront");
         LoggerFactory shoulderLog = parent.name("shoulder");
         LoggerFactory wristLog = parent.name("wrist");
+
         switch (Identity.instance) {
             case COMP_BOT -> {
 
@@ -154,8 +159,8 @@ public class CalgamesMech extends SubsystemBase {
                         NeutralMode.BRAKE, MotorPhase.REVERSE,
                         100,
                         100,
-                        PIDConstants.makePositionPID(5),
-                        Feedforward100.makeWCPSwerveTurningFalcon6());
+                        PIDConstants.makePositionPID(elevatorfrontLog, 5),
+                        Feedforward100.makeWCPSwerveTurningFalcon6(elevatorfrontLog));
                 Talon6Encoder elevatorFrontEncoder = new Talon6Encoder(
                         elevatorfrontLog, elevatorFrontMotor);
 
@@ -170,8 +175,8 @@ public class CalgamesMech extends SubsystemBase {
                         NeutralMode.BRAKE, MotorPhase.FORWARD,
                         100, // orginally 60
                         100, // originally 90
-                        PIDConstants.makePositionPID(5),
-                        Feedforward100.makeWCPSwerveTurningFalcon6());
+                        PIDConstants.makePositionPID(elevatorbackLog, 5),
+                        Feedforward100.makeWCPSwerveTurningFalcon6(elevatorbackLog));
                 Talon6Encoder elevatorBackEncoder = new Talon6Encoder(
                         elevatorbackLog, elevatorBackMotor);
                 m_elevatorBack = new LinearMechanism(
@@ -186,8 +191,8 @@ public class CalgamesMech extends SubsystemBase {
                         MotorPhase.REVERSE,
                         100, // og 60
                         100, // og 90
-                        PIDConstants.makePositionPID(5),
-                        Feedforward100.makeWCPSwerveTurningFalcon6());
+                        PIDConstants.makePositionPID(shoulderLog, 5),
+                        Feedforward100.makeWCPSwerveTurningFalcon6(shoulderLog));
                 Talon6Encoder shoulderEncoder = new Talon6Encoder(
                         shoulderLog, shoulderMotor);
                 // The shoulder has a 5048 on the intermediate shaft
@@ -214,11 +219,11 @@ public class CalgamesMech extends SubsystemBase {
                 Kraken6Motor wristMotor = new Kraken6Motor(
                         wristLog,
                         new CanId(22),
-                        NeutralMode.BRAKE, MotorPhase.FORWARD,
+                        NeutralMode.COAST, MotorPhase.FORWARD,
                         40, // og 60
                         60, // og 90
-                        PIDConstants.makePositionPID(8), // og 10
-                        Feedforward100.makeWCPSwerveTurningFalcon6());
+                        PIDConstants.makePositionPID(wristLog, 8), // og 10
+                        Feedforward100.makeWCPSwerveTurningFalcon6(wristLog));
                 // the wrist has no angle sensor, so it needs to start in the "zero" position.
                 Talon6Encoder wristEncoder = new Talon6Encoder(
                         wristLog, wristMotor);
@@ -232,7 +237,6 @@ public class CalgamesMech extends SubsystemBase {
                         wristLog, wristMotor, wristProxySensor, wristGearRatio,
                         -1.5, // min
                         2.1); // max
-
             }
             default -> {
                 SimulatedBareMotor elevatorMotorFront = new SimulatedBareMotor(
@@ -273,6 +277,16 @@ public class CalgamesMech extends SubsystemBase {
         }
     }
 
+    @Override
+    public Command play(double freq) {
+        return run(() -> {
+            m_elevatorBack.play(freq);
+            m_elevatorFront.play(freq);
+            m_shoulder.play(freq);
+            m_wrist.play(freq);
+        });
+    }
+
     public double getArmLength() {
         return m_armLengthM;
     }
@@ -283,32 +297,54 @@ public class CalgamesMech extends SubsystemBase {
 
     public Config getConfig() {
         return new Config(
-                m_elevatorBack.getPositionM().orElse(0),
-                m_shoulder.getPositionRad().orElse(0),
-                m_wrist.getPositionRad().orElse(0));
+                m_elevatorBack.getPositionM(),
+                m_shoulder.getWrappedPositionRad(),
+                m_wrist.getWrappedPositionRad());
     }
 
     public JointVelocities getJointVelocity() {
         return new JointVelocities(
-                m_elevatorBack.getVelocityM_S().orElse(0),
-                m_shoulder.getVelocityRad_S().orElse(0),
-                m_wrist.getVelocityRad_S().orElse(0));
+                m_elevatorBack.getVelocityM_S(),
+                m_shoulder.getVelocityRad_S(),
+                m_wrist.getVelocityRad_S());
     }
 
-    public SwerveModel getState() {
+    @Override
+    public ModelR3 getState() {
         Config c = getConfig();
         JointVelocities jv = getJointVelocity();
         Pose2d p = m_kinematics.forward(c);
-        FieldRelativeVelocity v = m_jacobian.forward(c, jv);
-        return new SwerveModel(p, v);
+        GlobalVelocityR3 v = m_jacobian.forward(c, jv);
+        return new ModelR3(p, v);
+    }
+
+    @Override
+    public void setVelocity(GlobalVelocityR3 v) {
+        Pose2d pose = getState().pose();
+        GlobalAccelerationR3 a = new GlobalAccelerationR3(0, 0, 0);
+        ControlR3 control = new ControlR3(pose, v, a);
+
+        JointVelocities jv = m_jacobian.inverse(control.model());
+        JointAccelerations ja = m_jacobian.inverseA(control);
+        JointForce jf = m_dynamics.forward(getConfig(), jv, ja);
+
+        m_elevatorFront.setVelocity(jv.elevator(), ja.elevator(), jf.elevator());
+        m_elevatorBack.setVelocity(jv.elevator(), ja.elevator(), jf.elevator());
+        if (DISABLED) {
+            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
+            return;
+        }
+        m_wrist.setVelocity(jv.wrist(), ja.wrist(), jf.wrist());
+        m_shoulder.setVelocity(jv.shoulder(), ja.shoulder(), jf.shoulder());
     }
 
     /** There are no profiles here, so this control needs to be feasible. */
-    public void set(SwerveControl control) {
+    public void set(ControlR3 control) {
         Pose2d pose = control.pose();
         Config config = m_kinematics.inverse(pose);
-        if (DEBUG)
-            System.out.printf("pose %s config %s\n", Util.pose2Str(pose), config);
+        if (DEBUG) {
+            System.out.printf("pose %s config %s\n", StrUtil.pose2Str(pose), config);
+        }
         if (config.isNaN()) {
             if (DEBUG)
                 System.out.println("skipping invalid config");
@@ -326,6 +362,7 @@ public class CalgamesMech extends SubsystemBase {
     }
 
     /** This is not "hold position" this is "torque off". */
+    @Override
     public void stop() {
         m_elevatorFront.stop();
         m_elevatorBack.stop();
@@ -372,7 +409,7 @@ public class CalgamesMech extends SubsystemBase {
      * to push against gravity (making that squealing noise).
      */
     public Command profileHomeAndThenRest() {
-        Done f = FollowJointProfiles.slowFast(this, HOME);
+        MoveAndHold f = FollowJointProfiles.slowFast(this, HOME);
         return sequence(
                 // f.until(f::isDone),
                 f.withTimeout(2),
@@ -447,7 +484,7 @@ public class CalgamesMech extends SubsystemBase {
     /// TRAJECTORY COMMANDS
     ///
 
-    public Done homeToL1() {
+    public MoveAndHold homeToL1() {
         return m_transit.endless("homeToL1",
                 HolonomicPose2d.make(m_home, -1.5),
                 HolonomicPose2d.make(L2, -1.7));
@@ -460,7 +497,7 @@ public class CalgamesMech extends SubsystemBase {
                 HolonomicPose2d.make(m_home, 1.5));
     }
 
-    public Done homeToL2() {
+    public MoveAndHold homeToL2() {
         return m_transit.endless("homeToL2",
                 HolonomicPose2d.make(m_home, 1.5),
                 HolonomicPose2d.make(L2, 1.5));
@@ -472,7 +509,7 @@ public class CalgamesMech extends SubsystemBase {
                 HolonomicPose2d.make(m_home, -1.5));
     }
 
-    public Done homeToL3() {
+    public MoveAndHold homeToL3() {
         return m_transit.endless("homeToL3",
                 HolonomicPose2d.make(m_home, 0.8),
                 HolonomicPose2d.make(L3, 1.5));
@@ -484,15 +521,27 @@ public class CalgamesMech extends SubsystemBase {
                 HolonomicPose2d.make(m_home, -2.3));
     }
 
-    public Done homeToL4() {
+    public MoveAndHold homeToL4() {
         return m_transit.endless("homeToL4",
                 HolonomicPose2d.make(m_home, 0.1),
                 HolonomicPose2d.make(L4, 1.5));
     }
 
+    public MoveAndHold homeToL4Back() {
+        return m_transit.endless("homeToL4",
+                HolonomicPose2d.make(m_home, 0.1),
+                HolonomicPose2d.make(L4_BACK, -1.5));
+    }
+
     public Command l4ToHome() {
         return m_transit.terminal("l4ToHome",
                 HolonomicPose2d.make(L4, -1.5),
+                HolonomicPose2d.make(m_home, -3));
+    }
+
+    public Command l4BackToHome() {
+        return m_transit.terminal("l4ToHome",
+                HolonomicPose2d.make(L4_BACK, 1.5),
                 HolonomicPose2d.make(m_home, -3));
     }
 
@@ -508,8 +557,14 @@ public class CalgamesMech extends SubsystemBase {
                 HolonomicPose2d.make(ALGAE_L3, 1.5));
     }
 
-    public Command algaeToHome() {
-        return m_transit.endless("homeToAlgaeL3",
+    public Command algaeL2ToHome() {
+        return m_transit.terminal("homeToAlgaeL2",
+                HolonomicPose2d.make(ALGAE_L2, -1.0),
+                HolonomicPose2d.make(m_home, Math.PI));
+    }
+
+    public Command algaeL3ToHome() {
+        return m_transit.terminal("homeToAlgaeL3",
                 HolonomicPose2d.make(ALGAE_L3, -1.0),
                 HolonomicPose2d.make(m_home, Math.PI));
     }
@@ -526,16 +581,24 @@ public class CalgamesMech extends SubsystemBase {
                 .withName("algaeReefPick");
     }
 
+    public Command algaeReefExit(Supplier<ScoringLevel> level) {
+        return select(Map.ofEntries(
+                Map.entry(ScoringLevel.L3, algaeL3ToHome()),
+                Map.entry(ScoringLevel.L2, algaeL2ToHome()) //
+        ), level)
+                .withName("algaeReefExit");
+    }
+
     /**
      * Move to the barge scoring position and hold there forever
      */
-    public Done homeToBarge() {
+    public MoveAndHold homeToBarge() {
         return m_transit.endless("homeToBarge",
                 HolonomicPose2d.make(m_home, 0),
                 HolonomicPose2d.make(BARGE, -1));
     }
 
-    public Done bargeToHome() {
+    public MoveAndHold bargeToHome() {
         return m_transit.endless("bargeToHome",
                 HolonomicPose2d.make(BARGE, 2.5),
                 HolonomicPose2d.make(m_home, Math.PI));
@@ -544,8 +607,8 @@ public class CalgamesMech extends SubsystemBase {
 
     /** Not too far extended in any direction. */
     public boolean isSafeToDrive() {
-        double x = m_elevatorBack.getPositionM().orElse(0);
-        double y = m_shoulder.getPositionRad().orElse(0);
+        double x = m_elevatorBack.getPositionM();
+        double y = m_shoulder.getWrappedPositionRad();
         return x < 1 && Math.abs(y) < 1;
     }
 
@@ -574,11 +637,11 @@ public class CalgamesMech extends SubsystemBase {
         m_elevatorFront.stop();
         m_elevatorBack.stop();
         if (DISABLED) {
-            m_wrist.setPosition(2, 0, 0, 0);
+            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
             return;
         }
-        m_wrist.setPosition(0, 0, 0, 0);
-        m_shoulder.setPosition(0, 0, 0, 0);
+        m_wrist.setUnwrappedPosition(0, 0, 0, 0);
+        m_shoulder.setUnwrappedPosition(0, 0, 0, 0);
     }
 
     private void set(Config c, JointVelocities jv, JointAccelerations ja, JointForce jf) {
@@ -586,11 +649,11 @@ public class CalgamesMech extends SubsystemBase {
         m_elevatorFront.setPosition(c.shoulderHeight(), jv.elevator(), 0, jf.elevator());
         m_elevatorBack.setPosition(c.shoulderHeight(), jv.elevator(), 0, jf.elevator());
         if (DISABLED) {
-            m_wrist.setPosition(2, 0, 0, 0);
+            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
             return;
         }
-        m_wrist.setPosition(c.wristAngle(), jv.shoulder(), 0, jf.wrist());
-        m_shoulder.setPosition(c.shoulderAngle(), jv.shoulder(), 0, jf.shoulder());
+        m_wrist.setUnwrappedPosition(c.wristAngle(), jv.wrist(), 0, jf.wrist());
+        m_shoulder.setUnwrappedPosition(c.shoulderAngle(), jv.shoulder(), 0, jf.shoulder());
     }
 
     public Command setDisabled(boolean disabled) {
@@ -605,8 +668,8 @@ public class CalgamesMech extends SubsystemBase {
         m_log_jointA.log(() -> ja);
         m_log_jointF.log(() -> jf);
         Pose2d p = m_kinematics.forward(c);
-        FieldRelativeVelocity v = m_jacobian.forward(c, jv);
-        FieldRelativeAcceleration a = m_jacobian.forwardA(c, jv, ja);
+        GlobalVelocityR3 v = m_jacobian.forward(c, jv);
+        GlobalAccelerationR3 a = m_jacobian.forwardA(c, jv, ja);
         m_log_pose.log(() -> p);
         m_log_cartesianV.log(() -> v);
         m_log_cartesianA.log(() -> a);

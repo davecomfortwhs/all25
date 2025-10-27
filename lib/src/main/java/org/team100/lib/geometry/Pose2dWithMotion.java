@@ -37,6 +37,10 @@ public class Pose2dWithMotion {
         private final double m_dy;
         private final double m_dtheta;
 
+        /**
+         * dx and dy are only useful to describe the direction.
+         * dtheta is radians per *meter moved* not per second.
+         */
         public MotionDirection(double dx, double dy, double dtheta) {
             m_dx = dx;
             m_dy = dy;

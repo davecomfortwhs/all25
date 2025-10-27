@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
 
 /**
  * Illustrates how to coordinate multiple profiles to take the same amount of
@@ -60,14 +59,14 @@ class CoordinatedProfileTest {
             max_v = Math.max(max_v, s1.v());
             if (s1.model().near(g1, 0.01)) {
                 if (PRINT)
-                    Util.println("at goal at t " + total_time);
+                    System.out.println("at goal at t " + total_time);
                 break;
             }
             if (PRINT)
-                Util.printf("%f %s\n", total_time, s1);
+                System.out.printf("%f %s\n", total_time, s1);
         }
         if (PRINT)
-            Util.println("max v " + max_v);
+            System.out.println("max v " + max_v);
         // this is a triangle profile
         assertEquals(2.0, total_time, DELTA);
 
@@ -82,14 +81,14 @@ class CoordinatedProfileTest {
             max_v = Math.max(max_v, s2.v());
             if (s2.model().near(g2, 0.01)) {
                 if (PRINT)
-                    Util.println("at goal at t " + total_time);
+                    System.out.println("at goal at t " + total_time);
                 break;
             }
             if (PRINT)
-                Util.printf("%f %s\n", total_time, s2);
+                System.out.printf("%f %s\n", total_time, s2);
         }
         if (PRINT)
-            Util.println("max v " + max_v);
+            System.out.println("max v " + max_v);
         // this is a trapezoid profile
         assertEquals(3.0, total_time, DELTA);
     }
@@ -123,14 +122,14 @@ class CoordinatedProfileTest {
             max_v = Math.max(max_v, s1.v());
             if (s1.model().near(g1, 0.01)) {
                 if (PRINT)
-                    Util.println("at goal at t " + total_time);
+                System.out.println("at goal at t " + total_time);
                 break;
             }
             if (PRINT)
-                Util.printf("%f %s\n", total_time, s1);
+            System.out.printf("%f %s\n", total_time, s1);
         }
         if (PRINT)
-            Util.println("max v " + max_v);
+        System.out.println("max v " + max_v);
         // this is a triangle profile
         assertEquals(2.0, total_time, DELTA);
 
@@ -145,14 +144,14 @@ class CoordinatedProfileTest {
             max_v = Math.max(max_v, s2.v());
             if (s2.model().near(g2, 0.01)) {
                 if (PRINT)
-                    Util.println("at goal at t " + total_time);
+                    System.out.println("at goal at t " + total_time);
                 break;
             }
             if (PRINT)
-                Util.printf("%f %s\n", total_time, s2);
+                System.out.printf("%f %s\n", total_time, s2);
         }
         if (PRINT)
-            Util.println("max v " + max_v);
+            System.out.println("max v " + max_v);
         // this is a trapezoid profile
         assertEquals(3.0, total_time, DELTA);
     }
@@ -261,11 +260,11 @@ class CoordinatedProfileTest {
             stateY = py.calculate(DT, stateY, gy);
             if (stateX.model().near(gx, PROFILE_TOLERANCE) && stateY.model().near(gy, PROFILE_TOLERANCE)) {
                 if (PRINT)
-                    Util.println("at goal at t " + total_time);
+                    System.out.println("at goal at t " + total_time);
                 break;
             }
             if (PRINT)
-                Util.printf("%f %s %s\n", total_time, stateX, stateY);
+                System.out.printf("%f %s %s\n", total_time, stateX, stateY);
         }
     }
 

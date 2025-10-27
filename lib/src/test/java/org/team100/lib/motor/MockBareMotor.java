@@ -36,7 +36,8 @@ public class MockBareMotor implements BareMotor {
     }
 
     @Override
-    public void setPosition(double position, double velocity, double accelRad_S2, double torque) {
+    public void setUnwrappedPosition(
+            double position, double velocity, double accelRad_S2, double torque) {
         this.position = position;
         this.velocity = velocity;
         this.accel = accelRad_S2;
@@ -45,15 +46,11 @@ public class MockBareMotor implements BareMotor {
         final double motorRev_S = velocity / (2 * Math.PI);
         final double motorRev_S2 = accelRad_S2 / (2 * Math.PI);
 
-        // use the setpoint as the measurement
-        final double currentMotorRev_S = velocity;
-
-        frictionFFVolts = m_ff.frictionFFVolts(currentMotorRev_S, motorRev_S);
+        frictionFFVolts = m_ff.frictionFFVolts(motorRev_S);
         velocityFFVolts = m_ff.velocityFFVolts(motorRev_S);
         torqueFFVolts = getTorqueFFVolts(torque);
-        accelFFVolts = m_ff.accelFFVolts(currentMotorRev_S, motorRev_S2);
+        accelFFVolts = m_ff.accelFFVolts(motorRev_S, motorRev_S2);
         ffVolts = frictionFFVolts + velocityFFVolts + torqueFFVolts + accelFFVolts;
-
     }
 
     /** placeholder */
@@ -90,7 +87,7 @@ public class MockBareMotor implements BareMotor {
     }
 
     @Override
-    public double getPositionRad() {
+    public double getUnwrappedPositionRad() {
         return this.position;
     }
 
@@ -100,18 +97,20 @@ public class MockBareMotor implements BareMotor {
     }
 
     @Override
-    public void setEncoderPositionRad(double positionRad) {
+    public void setUnwrappedEncoderPositionRad(double positionRad) {
         this.position = positionRad;
     }
 
     @Override
     public void setTorqueLimit(double torqueNm) {
-        //
     }
 
     @Override
     public void periodic() {
-        //
+    }
+
+    @Override
+    public void play(double freq) {
     }
 
 }

@@ -2,20 +2,34 @@ package org.team100.lib.logging;
 
 import org.team100.lib.logging.primitive.NTPrimitiveLogger;
 import org.team100.lib.logging.primitive.PrimitiveLogger;
+import org.team100.lib.util.NamedChooser;
 
 import com.ctre.phoenix6.SignalLogger;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Logging singleton.
  * 
- * If you use this logger you'll want to set the log level, either directly
- * (setLevel) or via the LevelPoller.
+ * If you use this logger you'll want to set the log level.
  */
 public class Logging {
-    private static final Logging instance = new Logging();
+    private static final Level DEFAULT_LEVEL = Level.TRACE;
 
     private PrimitiveLogger ntLogger;
-    private Level m_level;
+
+    private static final SendableChooser<Level> m_LevelChooser = new NamedChooser<>("Log Level");
+
+    static {
+        for (Level level : Level.values()) {
+            m_LevelChooser.addOption(level.name(), level);
+        }
+        m_LevelChooser.setDefaultOption(DEFAULT_LEVEL.name(), DEFAULT_LEVEL);
+        SmartDashboard.putData(m_LevelChooser);
+    }
+
+    private static final Logging instance = new Logging();
 
     /**
      * root is "field", with a ".type"->"Field2d" entry as required by glass.
@@ -28,13 +42,9 @@ public class Logging {
      * Clients should use the static instance, not the constructor.
      */
     private Logging() {
-        // this will be overridden by {@link LogLevelPoller}
-        m_level = Level.COMP;
-
         ntLogger = new NTPrimitiveLogger();
-        fieldLogger = new LoggerFactory(() -> m_level, "field", ntLogger);
-        rootLogger = new LoggerFactory(() -> m_level, "log", ntLogger);
-
+        fieldLogger = new LoggerFactory(this::getLevel, "field", ntLogger);
+        rootLogger = new LoggerFactory(this::getLevel, "log", ntLogger);
         fieldLogger.stringLogger(Level.COMP, ".type").log(() -> "Field2d");
 
         // turn off the CTRE log we never use
@@ -47,15 +57,8 @@ public class Logging {
         return 0;
     }
 
-    public void periodic() {
-    }
-
-    public void setLevel(Level level) {
-        m_level = level;
-    }
-
     public Level getLevel() {
-        return m_level;
+        return m_LevelChooser.getSelected();
     }
 
     /** The logging singleton. */

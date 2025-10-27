@@ -102,7 +102,7 @@ public enum Camera {
                     new Translation3d(-0.29, -0.22, 0.89),
                     // new Rotation3d(0.01, -0.83, -0.199).unaryMinus())),
                     // new Rotation3d(0.020, -0.84, -0.195).unaryMinus())),
-                    new Rotation3d(-0.14, -0.68, 0.23).unaryMinus().plus(new Rotation3d(0,0,Math.PI)))),
+                    new Rotation3d(-0.14, -0.68, 0.23).unaryMinus().plus(new Rotation3d(0, 0, Math.PI)))),
 
     TEST4("test4",
             new Transform3d(
@@ -118,7 +118,6 @@ public enum Camera {
                     new Translation3d(0.198, 0.284, 0.811),
                     // new Rotation3d(-0.16, Math.toRadians(40), Math.toRadians(-18)))),
                     new Rotation3d(-0.043, -0.705, 0.254).unaryMinus())),
-                    
 
     UNKNOWN(null, new Transform3d());
 
@@ -148,5 +147,14 @@ public enum Camera {
 
     public String getSerial() {
         return m_serialNumber;
+    }
+
+    /**
+     * Use this to calibrate the cameras. Set the transform to identity, set a tag
+     * in a known location, and enter what the camera thinks the tag pose is -- this
+     * appears in the log as "tag in camera".
+     */
+    public static Transform3d fromCalibration(Transform3d robotToTag, Transform3d cameraToTag) {
+        return robotToTag.plus(cameraToTag.inverse());
     }
 }

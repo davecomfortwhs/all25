@@ -19,6 +19,8 @@ The most important aspect of Team 100 code is simplicity.  Classes should be sma
 
 Use names that describe the meaning of what you're doing.  If you change the meaning, change the name.  If the meaning is really obvious, it's ok to use really short names like ```x```.
 
+Avoid duplicative class names.  If you really want to use a name that is also used elsewhere, append "100" to it, e.g. there's a "MecanumDrive" in WPILib, so ours is called "MecanumDrive100".
+
 When you have a lot of members and constructor arguments, put the lists in the same order.
 
 When you have things that have a natural order, like "x" and "y", or "from" and "to", use that order.

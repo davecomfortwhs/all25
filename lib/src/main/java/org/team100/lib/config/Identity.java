@@ -3,8 +3,6 @@ package org.team100.lib.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.team100.lib.util.Util;
-
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 
@@ -29,15 +27,15 @@ public enum Identity {
     SQUAREBOT("031e31e3"),
     SWERVE_TWO("0317f285"),
 
-    COMP_BOT("03238232"), 
-    SWERVE_ONE("032363AC"), 
+    COMP_BOT("03238232"),
+    SWERVE_ONE("032363AC"),
 
     DISABLED("disabled"), // for mechanisms which don't exist
     BLANK(""), // e.g. test default or simulation
     UNKNOWN(null);
     // FRC_100_ea4("03238232"),
     // COMP_BOT("0306cea4");
-    
+
     private static final Map<String, Identity> identities = new HashMap<>();
 
     static {
@@ -68,10 +66,10 @@ public enum Identity {
         }
         if (identities.containsKey(serialNumber)) {
             Identity identity = identities.get(serialNumber);
-            Util.printf("Identity: %s\n", identity);
+            System.out.printf("Identity: %s\n", identity);
             return identity;
         }
-        Util.println("Identity: UNKNOWN");
+        System.out.println("Identity: UNKNOWN");
         return UNKNOWN;
     }
 }

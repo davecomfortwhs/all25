@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.testing.TestUtil;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -78,9 +77,9 @@ public class URDFCartesianTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.println("Cartesian inverse");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Cartesian inverse");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 }

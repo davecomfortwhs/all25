@@ -5,24 +5,24 @@ import java.util.function.DoubleSupplier;
 import org.team100.lib.config.Feedforward100;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.controller.simple.PIDFeedback;
-import org.team100.lib.encoder.AS5048RotaryPositionSensor;
+import org.team100.lib.controller.r1.PIDFeedback;
 import org.team100.lib.encoder.EncoderDrive;
 import org.team100.lib.encoder.RotaryPositionSensor;
-import org.team100.lib.encoder.SimulatedBareEncoder;
-import org.team100.lib.encoder.SimulatedRotaryPositionSensor;
+import org.team100.lib.encoder.sim.SimulatedBareEncoder;
+import org.team100.lib.encoder.sim.SimulatedRotaryPositionSensor;
+import org.team100.lib.encoder.wpi.AS5048RotaryPositionSensor;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motion.servo.AngularPositionServo;
 import org.team100.lib.motion.servo.OnboardAngularPositionServo;
-import org.team100.lib.motor.Falcon6Motor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode;
-import org.team100.lib.motor.SimulatedBareMotor;
+import org.team100.lib.motor.ctre.Falcon6Motor;
+import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.profile.incremental.IncrementalProfile;
 import org.team100.lib.profile.incremental.TrapezoidIncrementalProfile;
-import org.team100.lib.reference.IncrementalProfileReference1d;
-import org.team100.lib.reference.ProfileReference1d;
+import org.team100.lib.reference.r1.IncrementalProfileReferenceR1;
+import org.team100.lib.reference.r1.ProfileReferenceR1;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
 
@@ -37,23 +37,22 @@ public class Climber extends SubsystemBase {
         LoggerFactory log = parent.name("Climber");
 
         IncrementalProfile profile100 = new TrapezoidIncrementalProfile(1, 2, 0.05);
-        ProfileReference1d ref = new IncrementalProfileReference1d(profile100, 0.05, 0.05);
+        ProfileReferenceR1 ref = new IncrementalProfileReferenceR1(profile100, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
 
         switch (Identity.instance) {
-            case COMP_BOT -> { // TODO: MAKE SURE TO CHANGE THIS BACK TO BRAKE MODE FOR NEUTRAL REALLY
-                               // IMPORTANT!
+            case COMP_BOT -> {
                 Falcon6Motor motor = new Falcon6Motor(log, canID, NeutralMode.BRAKE, MotorPhase.REVERSE,
-                        20, 20, // og 50, TODO: FIX THIS
-                        PIDConstants.makePositionPID(1),
-                        Feedforward100.makeArmPivot());
+                        20, 20,
+                        PIDConstants.makePositionPID(log, 1),
+                        Feedforward100.makeArmPivot(log));
 
-                double inputOffset = 0.110602 + (0.33); // 9/28
+                double inputOffset = 0.440602;
                 RotaryPositionSensor sensor = new AS5048RotaryPositionSensor(
                         log, new RoboRioChannel(0), inputOffset, EncoderDrive.DIRECT);
-                double gearRatio = 5 * 5 * 4 * 20; // - 9/28
+                double gearRatio = 5 * 5 * 4 * 20;
 
-                RotaryMechanism rotaryMechanism = new RotaryMechanism( 
+                RotaryMechanism rotaryMechanism = new RotaryMechanism(
                         log, motor, sensor, gearRatio,
                         0, Math.PI / 2);
 
@@ -61,7 +60,7 @@ public class Climber extends SubsystemBase {
             }
 
             default -> {
-                SimulatedBareMotor climberMotor = new SimulatedBareMotor(log, 100);
+                SimulatedBareMotor climberMotor = new SimulatedBareMotor(log, 600);
 
                 SimulatedBareEncoder encoder = new SimulatedBareEncoder(log, climberMotor);
                 SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
@@ -85,7 +84,7 @@ public class Climber extends SubsystemBase {
     }
 
     public double angle() {
-        return m_servo.getPosition().orElse(0);
+        return m_servo.getWrappedPositionRad();
     }
 
     public void stopMotor() {
@@ -100,7 +99,6 @@ public class Climber extends SubsystemBase {
     }
 
     public Command manual(DoubleSupplier s) {
-
         return runEnd(
                 () -> setDutyCycle(s.getAsDouble()),
                 () -> setDutyCycle(0));
@@ -109,7 +107,6 @@ public class Climber extends SubsystemBase {
     /** Push the climber out into the intake position. */
     public Command goToIntakePosition() {
         return startRun(
-                // TODO: why do we need this reset?
                 () -> reset(),
                 () -> setAngle(Math.PI / 2));
     }
@@ -117,7 +114,6 @@ public class Climber extends SubsystemBase {
     /** Pull the climber in all the way to the climb position. */
     public Command goToClimbPosition() {
         return startRun(
-                // TODO: why do we need this reset?
                 () -> reset(),
                 () -> setAngle(0));
     }

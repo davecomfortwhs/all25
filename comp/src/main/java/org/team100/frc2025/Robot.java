@@ -1,240 +1,142 @@
-
 package org.team100.frc2025;
 
-import java.io.IOException;
-
+import org.team100.frc2025.robot.AllAutons;
+import org.team100.frc2025.robot.Binder;
+import org.team100.frc2025.robot.Machinery;
+import org.team100.frc2025.robot.Prewarmer;
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.config.Identity;
 import org.team100.lib.experiments.Experiment;
 import org.team100.lib.experiments.Experiments;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.logging.JvmLogger;
-import org.team100.lib.logging.Level;
-import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.LoggerFactory.BooleanLogger;
-import org.team100.lib.logging.LoggerFactory.DoubleLogger;
-import org.team100.lib.logging.LoggerFactory.IntLogger;
-import org.team100.lib.logging.Logging;
-import org.team100.lib.util.Util;
+import org.team100.lib.logging.RobotLog;
+import org.team100.lib.util.Banner;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot100 {
-    private static final boolean DEBUG = false;
 
-    private final DoubleLogger m_log_ds_MatchTime;
-    private final BooleanLogger m_log_ds_AutonomousEnabled;
-    private final BooleanLogger m_log_ds_TeleopEnabled;
-    private final BooleanLogger m_log_ds_FMSAttached;
-    private final IntLogger m_log_key_list_size;
-    private final DoubleLogger m_log_voltage;
-    private final JvmLogger m_jvmLogger;
-    /** How long it takes to update the cache. */
-    private final DoubleLogger m_log_update;
-
-    private RobotContainer m_robotContainer;
+    private final RobotLog m_robotLog;
+    private final Machinery m_machinery;
+    private final AllAutons m_allAutons;
+    private final Binder m_binder;
 
     public Robot() {
-        LoggerFactory dsLog = m_robotLogger.name("DriverStation");
-        m_log_ds_MatchTime = dsLog.doubleLogger(Level.TRACE, "MatchTime");
-        m_log_ds_AutonomousEnabled = dsLog.booleanLogger(Level.TRACE, "AutonomousEnabled");
-        m_log_ds_TeleopEnabled = dsLog.booleanLogger(Level.TRACE, "TeleopEnabled");
-        m_log_ds_FMSAttached = dsLog.booleanLogger(Level.TRACE, "FMSAttached");
-        m_log_key_list_size = m_robotLogger.intLogger(Level.TRACE, "key list size");
-        m_log_voltage = m_robotLogger.doubleLogger(Level.TRACE, "voltage");
-        m_jvmLogger = new JvmLogger(m_robotLogger);
-        m_log_update = m_robotLogger.doubleLogger(Level.COMP, "update time (s)");
-        // 4/2/25 Joel added this to try to avoid doing extra work
-        // setNetworkTablesFlushEnabled(false);
-        // CanBridge.runTCP();
-    }
+        Banner.printBanner();
 
-    ///////////////////////////////////////////////////////////////////////
-    //
-    // RobotInit is called once by TimedRobot.startCompetition.
-    //
-
-    @Override
-    public void robotInit() {
-        Util.printf("WPILib Version: %s\n", WPILibVersion.Version); // 2023.2.1
-        Util.printf("RoboRIO serial number: %s\n", RobotController.getSerialNumber());
-        Util.printf("Identity: %s\n", Identity.instance.name());
-        RobotController.setBrownoutVoltage(5.5);
-        banner();
-
-        // By default, LiveWindow turns off the CommandScheduler in test mode,
-        // but we don't want that.
+        // We want the CommandScheduler, not LiveWindow.
         enableLiveWindowInTest(false);
 
-        // log what the scheduler is doing
+        // This is for setting up LaserCAN devices.
+        // CanBridge.runTCP();
+
+        System.out.printf("WPILib Version: %s\n", WPILibVersion.Version);
+        System.out.printf("RoboRIO serial number: %s\n", RobotController.getSerialNumber());
+        System.out.printf("Identity: %s\n", Identity.instance.name());
+        RobotController.setBrownoutVoltage(5.5);
+        DriverStation.silenceJoystickConnectionWarning(true);
+        Experiments.instance.show();
+
+        // Log what the scheduler is doing. Use "withName()".
         SmartDashboard.putData(CommandScheduler.getInstance());
 
-        try {
-            m_robotContainer = new RobotContainer(this);
-        } catch (IOException e) {
-            throw new IllegalStateException("Robot Container Instantiation Failed", e);
-        }
+        m_robotLog = new RobotLog();
 
-        m_robotContainer.onInit();
+        m_machinery = new Machinery();
+        m_allAutons = new AllAutons(m_machinery);
+        m_binder = new Binder(m_machinery);
+        m_binder.bind();
 
-        NetworkTableInstance.getDefault().startServer();
-
-        // DataLogManager.start();
-
-        Util.printf("Total Logger Keys: %d\n", Logging.instance().keyCount());
-
-        // This reduces the allocated heap size, not just the used heap size, which
-        // means more-frequent and smaller subsequent GC's.
-        System.gc();
+        Prewarmer.init(m_machinery);
     }
 
-    /**
-     * robotPeriodic is called in the IterativeRobotBase.loopFunc, which is what the
-     * TimedRobot runs in the main loop.
-     * 
-     * This is what should do all the work.
-     */
     @Override
     public void robotPeriodic() {
-        try {
-            // real-time priority for this thread while it's running robotPeriodic.
-            // see
-            // https://github.com/Mechanical-Advantage/AdvantageKit/blob/a86d21b27034a36d051798e3eaef167076cd302b/template_projects/sources/vision/src/main/java/frc/robot/Robot.java#L90
-            // This seems to interfere with CAN at startup
-            // Threads.setCurrentThreadPriority(true, 99);
-
-            // Advance the drumbeat.
-            Takt.update();
-
-            // Take all the measurements we can, as soon and quickly as possible.
-            double startUpdateS = Takt.actual();
-            Cache.refresh();
-            m_log_update.log(() -> (Takt.actual() - startUpdateS));
-
-            // Run one iteration of the command scheduler.
-            CommandScheduler.getInstance().run();
-
-            // Actuate LEDs, do some logging.
-            m_robotContainer.periodic();
-
-            m_log_ds_MatchTime.log(DriverStation::getMatchTime);
-            m_log_ds_AutonomousEnabled.log(DriverStation::isAutonomousEnabled);
-            m_log_ds_TeleopEnabled.log(DriverStation::isTeleopEnabled);
-            m_log_ds_FMSAttached.log(DriverStation::isFMSAttached);
-
-            m_jvmLogger.logGarbageCollectors();
-            m_jvmLogger.logMemoryPools();
-            m_jvmLogger.logMemoryUsage();
-
-            Logging.instance().periodic();
-
-            if (Experiments.instance.enabled(Experiment.FlushOften)) {
-                // Util.warn("FLUSHING EVERY LOOP, DO NOT USE IN COMP");
-                NetworkTableInstance.getDefault().flush();
-            }
-        } finally {
-            // This thread should have low priority when the main loop isn't running.
-            // Threads.setCurrentThreadPriority(false, 0);
+        // Advance the drumbeat.
+        Takt.update();
+        // Take all the measurements we can, as soon and quickly as possible.
+        Cache.refresh();
+        // Run one iteration of the command scheduler.
+        CommandScheduler.getInstance().run();
+        m_machinery.periodic();
+        m_robotLog.periodic();
+        if (Experiments.instance.enabled(Experiment.FlushOften)) {
+            // StrUtil.warn("FLUSHING EVERY LOOP, DO NOT USE IN COMP");
+            NetworkTableInstance.getDefault().flush();
         }
     }
 
     //////////////////////////////////////////////////////////////////////
     //
-    // Inits are called on mode change, after exiting the previous mode.
+    // INITIALIZERS, DO NOT CHANGE THESE
     //
 
     @Override
     public void autonomousInit() {
-        m_robotContainer.onAuto();
-        m_robotContainer.scheduleAuton();
+        Command auton = m_allAutons.get();
+        if (auton == null)
+            return;
+        auton.schedule();
     }
 
     @Override
     public void teleopInit() {
-        // this cancels all the default commands, resulting in them being rescheduled
-        // immediately, which seems like maybe not great?
         CommandScheduler.getInstance().cancelAll();
-        m_robotContainer.cancelAuton();
-        m_robotContainer.onTeleop();
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////
-    //
-    // Mode-specific periodics should do nothing, to avoid caching anything.
-    //
-
-    @Override
-    public void disabledPeriodic() {
-        m_robotContainer.disabledPeriodic();
-        int keyListSize = NetworkTableInstance.getDefault().getTable("Vision").getKeys().size();
-        m_log_key_list_size.log(() -> keyListSize);
-    }
-
-    @Override
-    public void autonomousPeriodic() {
-        m_robotContainer.enabledPeriodic();
-    }
-
-    @Override
-    public void teleopPeriodic() {
-        m_robotContainer.enabledPeriodic();
-        m_log_voltage.log(RobotController::getBatteryVoltage);
-    }
-
-
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Simulation init is called once right after RobotInit.
-    //
-
-    @Override
-    public void simulationInit() {
-        DriverStation.silenceJoystickConnectionWarning(true);
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Simulation periodic is called after everything else; leave it empty.
-    //
-
-    @Override
-    public void simulationPeriodic() {
-        //
     }
 
     @Override
     public void close() {
         super.close();
-        m_robotContainer.close();
+        m_machinery.close();
+        m_allAutons.close();
     }
 
     ///////////////////////////////////////////////////////////////////////
+    //
+    // LEAVE ALL THESE EMPTY
+    //
 
-    private void clearCommands() {
-        CommandScheduler.getInstance().cancelAll();
-        CommandScheduler.getInstance().clearComposedCommands();
+    @Override
+    public void robotInit() {
     }
 
-    private void banner() {
-        StringBuilder b = new StringBuilder();
-        b.append("\n");
-        b.append("..########.########....###....##.....##.......##.....#####.....#####....\n");
-        b.append(".....##....##.........##.##...###...###.....####....##...##...##...##...\n");
-        b.append(".....##....##........##...##..####.####.......##...##.....##.##.....##..\n");
-        b.append(".....##....######...##.....##.##.###.##.......##...##.....##.##.....##..\n");
-        b.append(".....##....##.......#########.##.....##.......##...##.....##.##.....##..\n");
-        b.append(".....##....##.......##.....##.##.....##.......##....##...##...##...##...\n");
-        b.append(".....##....########.##.....##.##.....##.....######...#####.....#####....\n");
-        b.append("\n");
-        Util.println(b.toString());
-
+    @Override
+    public void simulationInit() {
     }
+
+    @Override
+    public void disabledInit() {
+    }
+
+    @Override
+    public void testInit() {
+    }
+
+    @Override
+    public void simulationPeriodic() {
+    }
+
+    @Override
+    public void disabledPeriodic() {
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+    }
+
+    @Override
+    public void teleopPeriodic() {
+    }
+
+    @Override
+    public void testPeriodic() {
+    }
+
 }

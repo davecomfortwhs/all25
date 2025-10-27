@@ -5,13 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.geometry.Pose2dWithMotion.MotionDirection;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.TestLoggerFactory;
+import org.team100.lib.logging.primitive.TestPrimitiveLogger;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
 class CentripetalAccelerationConstraintTest {
     private static final double DELTA = 0.001;
     private static final double CENTRIPETAL_SCALE = 1.0;
+    private static final LoggerFactory logger = new TestLoggerFactory(new TestPrimitiveLogger());
 
     @Test
     void testSimple() {
@@ -19,6 +23,7 @@ class CentripetalAccelerationConstraintTest {
 
         // 1 rad/m curve, 8 m/s^2 limit => 2.8 m/s
         CapsizeAccelerationConstraint c = new CapsizeAccelerationConstraint(
+                logger,
                 SwerveKinodynamicsFactory.forTest(),
                 CENTRIPETAL_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
@@ -35,6 +40,7 @@ class CentripetalAccelerationConstraintTest {
 
         // 1 rad/m curve, 8 m/s^2 limit => 2.8 m/s
         CapsizeAccelerationConstraint c = new CapsizeAccelerationConstraint(
+                logger,
                 SwerveKinodynamicsFactory.forTest(),
                 CENTRIPETAL_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
@@ -51,6 +57,7 @@ class CentripetalAccelerationConstraintTest {
 
         // 1 rad/m curve, 8 m/s^2 limit => 2.8 m/s
         CapsizeAccelerationConstraint c = new CapsizeAccelerationConstraint(
+                logger,
                 SwerveKinodynamicsFactory.forTest(),
                 CENTRIPETAL_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
@@ -66,6 +73,7 @@ class CentripetalAccelerationConstraintTest {
         assertEquals(4.083, SwerveKinodynamicsFactory.forTest2().getMaxCapsizeAccelM_S2(), DELTA);
         // 1 rad/m curve, 4 m/s^2 limit => 2 m/s
         CapsizeAccelerationConstraint c = new CapsizeAccelerationConstraint(
+                logger,
                 SwerveKinodynamicsFactory.forTest2(),
                 CENTRIPETAL_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(
@@ -80,6 +88,7 @@ class CentripetalAccelerationConstraintTest {
         assertEquals(4.083, SwerveKinodynamicsFactory.forTest2().getMaxCapsizeAccelM_S2(), DELTA);
         // no curvature
         CapsizeAccelerationConstraint c = new CapsizeAccelerationConstraint(
+                logger,
                 SwerveKinodynamicsFactory.forTest2(),
                 CENTRIPETAL_SCALE);
         Pose2dWithMotion p = new Pose2dWithMotion(

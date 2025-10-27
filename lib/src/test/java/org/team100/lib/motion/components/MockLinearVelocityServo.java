@@ -1,7 +1,5 @@
 package org.team100.lib.motion.components;
 
-import java.util.OptionalDouble;
-
 import org.team100.lib.motion.servo.LinearVelocityServo;
 
 public class MockLinearVelocityServo implements LinearVelocityServo {
@@ -11,6 +9,10 @@ public class MockLinearVelocityServo implements LinearVelocityServo {
     @Override
     public void reset() {
         //
+    }
+
+    @Override
+    public void setDutyCycle(double dutyCycle) {
     }
 
     @Override
@@ -24,8 +26,8 @@ public class MockLinearVelocityServo implements LinearVelocityServo {
     }
 
     @Override
-    public OptionalDouble getVelocity() {
-        return OptionalDouble.of(m_setpoint);
+    public double getVelocity() {
+        return m_setpoint;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class MockLinearVelocityServo implements LinearVelocityServo {
     }
 
     @Override
-    public OptionalDouble getDistance() {
+    public double getDistance() {
         throw new UnsupportedOperationException("Unimplemented method 'getDistance'");
     }
 
@@ -48,4 +50,7 @@ public class MockLinearVelocityServo implements LinearVelocityServo {
         //
     }
 
+    @Override
+    public void play(double freq) {
+    }
 }

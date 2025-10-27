@@ -22,4 +22,18 @@ class ControlUtilTest {
     void testClamp() {
         assertEquals(0.5, ControlUtil.clamp(2, 0.5), DELTA);
     }
+
+    @Test
+    void testVelocity() {
+        // does not squash
+        Velocity v = ControlUtil.velocity(
+                () -> 1.0,
+                () -> 1.0,
+                () -> 0.0,
+                0,
+                0);
+        assertEquals(-1, v.x(), DELTA);
+        assertEquals(-1, v.y(), DELTA);
+    }
+
 }

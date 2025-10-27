@@ -6,14 +6,10 @@ import java.util.Optional;
 
 import org.team100.lib.gyro.Gyro;
 import org.team100.lib.gyro.MockGyro;
-import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.TestLoggerFactory;
-import org.team100.lib.logging.primitive.TestPrimitiveLogger;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePosition100;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePositions;
-import org.team100.lib.util.Util;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePosition100;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,7 +17,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class SwerveDrivePoseEstimator100PerformanceTest {
     private static final boolean DEBUG = false;
     private static final double DELTA = 0.001;
-    private static final LoggerFactory logger = new TestLoggerFactory(new TestPrimitiveLogger());
 
     private final Pose2d visionRobotPoseMeters = new Pose2d(1, 0, Rotation2d.kZero);
 
@@ -54,7 +49,7 @@ public class SwerveDrivePoseEstimator100PerformanceTest {
      * writer to the pose reader, and save something like 20 us (0.4%) on average.
      */
     // There's no need to run this all the time
-    //@Test
+    // @Test
     void test0() {
         SwerveKinodynamics kinodynamics = SwerveKinodynamicsFactory.forTest();
         double[] stateStdDevs = new double[] { 0.1, 0.1, 0.1 };
@@ -91,8 +86,8 @@ public class SwerveDrivePoseEstimator100PerformanceTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
         assertEquals(11, history.size());
         assertEquals(0.2, history.lastKey(), DELTA);
@@ -105,8 +100,8 @@ public class SwerveDrivePoseEstimator100PerformanceTest {
         }
         finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
         assertEquals(11, history.size());
         assertEquals(0.2, history.lastKey(), DELTA);

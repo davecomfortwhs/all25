@@ -1,20 +1,18 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 /** Contains no logic. */
 public class MockIncrementalBareEncoder implements IncrementalBareEncoder {
     public double position = 0;
     public double velocity = 0;
 
     @Override
-    public OptionalDouble getVelocityRad_S() {
-        return OptionalDouble.of(velocity);
+    public double getVelocityRad_S() {
+        return velocity;
     }
 
     @Override
-    public OptionalDouble getPositionRad() {
-        return OptionalDouble.of(position);
+    public double getUnwrappedPositionRad() {
+        return position;
     }
 
     @Override
@@ -28,7 +26,7 @@ public class MockIncrementalBareEncoder implements IncrementalBareEncoder {
     }
 
     @Override
-    public void setEncoderPositionRad(double motorPositionRad) {
+    public void setUnwrappedEncoderPositionRad(double motorPositionRad) {
         position = motorPositionRad;
     }
 

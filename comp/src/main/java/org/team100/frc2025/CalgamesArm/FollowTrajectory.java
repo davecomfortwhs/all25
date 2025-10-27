@@ -1,11 +1,11 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.commands.Done;
-import org.team100.lib.reference.TrajectoryReference;
+import org.team100.lib.commands.MoveAndHold;
+import org.team100.lib.reference.r3.TrajectoryReferenceR3;
 import org.team100.lib.trajectory.Trajectory100;
 
 /** Analogous to DriveWithTrajectory, but for R3 positional control. */
-public class FollowTrajectory extends Done {
+public class FollowTrajectory extends MoveAndHold {
 
     private final CalgamesMech m_subsystem;
     private final Trajectory100 m_trajectory;
@@ -24,7 +24,7 @@ public class FollowTrajectory extends Done {
     public void initialize() {
         m_referenceController = new CalgamesReferenceController(
                 m_subsystem,
-                new TrajectoryReference(m_trajectory));
+                new TrajectoryReferenceR3(m_trajectory));
     }
 
     @Override
@@ -32,9 +32,16 @@ public class FollowTrajectory extends Done {
         m_referenceController.execute();
     }
 
+    @Override
     public boolean isDone() {
         return m_referenceController.isDone();
     }
+
+    @Override
+    public double toGo() {
+        return (m_referenceController == null) ? 0 : m_referenceController.toGo();
+    }
+
 
     @Override
     public void end(boolean interrupted) {

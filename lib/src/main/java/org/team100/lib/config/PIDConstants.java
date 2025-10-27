@@ -1,5 +1,11 @@
 package org.team100.lib.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.tuning.Mutable;
+
 /**
  * Be careful of the units for these parameters: different units will be used by
  * different outboard motor controllers, and by the same outboard motor
@@ -7,53 +13,35 @@ package org.team100.lib.config;
  * every use of this class.
  */
 public class PIDConstants {
-    private final double m_positionP;
+
+    private final List<Runnable> m_listeners = new ArrayList<>();
+
+    // private final double m_positionP;
+    private final Mutable m_positionP;
     private final double m_positionI;
     private final double m_positionD;
     private final double m_positionIZone;
-    private final double m_velocityP;
+    // private final double m_velocityP;
+    // try making velocity P not really a constant
+    private final Mutable m_velocityP;
     private final double m_velocityI;
     private final double m_velocityD;
     private final double m_velocityIZone;
 
-    public static PIDConstants makeVelocityPID(double p) {
-        return new PIDConstants(0, p);
+    public static PIDConstants zero(LoggerFactory log) {
+        return new PIDConstants(log, 0, 0);
     }
 
-    public static PIDConstants makePositionPID(double p) {
-        return new PIDConstants(p, 0);
+    public static PIDConstants makeVelocityPID(LoggerFactory log, double p) {
+        return new PIDConstants(log, 0, p);
     }
 
-    public static PIDConstants makeVelocityPID(double p, double i, double d) {
-        return new PIDConstants(0, 0, 0, p, i, d);
-    }
-
-    public static PIDConstants makePositionPID(double p, double i, double d) {
-        return new PIDConstants(p, i, d, 0, 0, 0);
-    }
-
-    public PIDConstants(double positionP, double velocityP) {
-        this(positionP, 0, 0, velocityP, 0, 0);
-    }
-
-    public PIDConstants() {
-        this(0, 0);
-    }
-
-    public PIDConstants(double positionP, double positionI, double positionD, double velocityP, double velocityI,
-            double velocityD) {
-        m_positionP = positionP;
-        m_positionI = positionI;
-        m_positionD = positionD;
-        m_positionIZone = 0;
-        m_velocityP = velocityP;
-        m_velocityI = velocityI;
-        m_velocityD = velocityD;
-        m_velocityIZone = 0;
+    public static PIDConstants makePositionPID(LoggerFactory log, double p) {
+        return new PIDConstants(log, p, 0);
     }
 
     public double getPositionP() {
-        return m_positionP;
+        return m_positionP.getAsDouble();
     }
 
     public double getPositionI() {
@@ -69,7 +57,7 @@ public class PIDConstants {
     }
 
     public double getVelocityP() {
-        return m_velocityP;
+        return m_velocityP.getAsDouble();
     }
 
     public double getVelocityI() {
@@ -82,5 +70,34 @@ public class PIDConstants {
 
     public double getVelocityIZone() {
         return m_velocityIZone;
+    }
+
+    public void register(Runnable listener) {
+        m_listeners.add(listener);
+    }
+
+    //////////////////////////////////////////////////////
+
+    private PIDConstants(LoggerFactory log, double positionP, double velocityP) {
+        this(log, positionP, 0, 0, velocityP, 0, 0);
+    }
+
+    private PIDConstants(LoggerFactory log, double positionP, double positionI, double positionD, double velocityP,
+            double velocityI,
+            double velocityD) {
+        // m_positionP = positionP;
+        m_positionP = new Mutable(log, "position P", positionP, this::onChange);
+        m_positionI = positionI;
+        m_positionD = positionD;
+        m_positionIZone = 0;
+        // m_velocityP = velocityP;
+        m_velocityP = new Mutable(log, "velocity P", velocityP, this::onChange);
+        m_velocityI = velocityI;
+        m_velocityD = velocityD;
+        m_velocityIZone = 0;
+    }
+
+    private void onChange(double ignored) {
+        m_listeners.stream().forEach(r -> r.run());
     }
 }

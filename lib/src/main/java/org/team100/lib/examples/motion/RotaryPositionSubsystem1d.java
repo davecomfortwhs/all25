@@ -3,29 +3,27 @@ package org.team100.lib.examples.motion;
 import org.team100.lib.config.Feedforward100;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.controller.simple.Feedback100;
-import org.team100.lib.controller.simple.FullStateFeedback;
-import org.team100.lib.encoder.AS5048RotaryPositionSensor;
+import org.team100.lib.controller.r1.Feedback100;
+import org.team100.lib.controller.r1.FullStateFeedback;
 import org.team100.lib.encoder.EncoderDrive;
 import org.team100.lib.encoder.RotaryPositionSensor;
-import org.team100.lib.encoder.SimulatedBareEncoder;
-import org.team100.lib.encoder.SimulatedRotaryPositionSensor;
+import org.team100.lib.encoder.sim.SimulatedBareEncoder;
+import org.team100.lib.encoder.sim.SimulatedRotaryPositionSensor;
+import org.team100.lib.encoder.wpi.AS5048RotaryPositionSensor;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.motion.mechanism.RotaryMechanism;
 import org.team100.lib.motion.servo.AngularPositionServo;
 import org.team100.lib.motion.servo.OnboardAngularPositionServo;
-import org.team100.lib.motor.Kraken6Motor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode;
-import org.team100.lib.motor.SimulatedBareMotor;
-import org.team100.lib.profile.timed.JerkLimitedIncrementalProfile;
-import org.team100.lib.reference.ProfileReference1d;
-import org.team100.lib.reference.Setpoints1d;
-import org.team100.lib.reference.TimedProfileReference1d;
+import org.team100.lib.motor.ctre.Kraken6Motor;
+import org.team100.lib.motor.sim.SimulatedBareMotor;
+import org.team100.lib.profile.timed.JerkLimitedTimedProfile;
+import org.team100.lib.reference.r1.ProfileReferenceR1;
+import org.team100.lib.reference.r1.TimedProfileReferenceR1;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -72,13 +70,13 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
         double positionTolerance = 0.05;
         double velocityTolerance = 0.05;
         Feedback100 feedback = new FullStateFeedback(
-                log, positionGain, velocityGain, MathUtil::angleModulus, positionTolerance, velocityTolerance);
+                log, positionGain, velocityGain, true, positionTolerance, velocityTolerance);
 
         double maxVel = 40;
         double maxAccel = 40;
         double maxJerk = 70;
-        JerkLimitedIncrementalProfile profile = new JerkLimitedIncrementalProfile(maxVel, maxAccel, maxJerk, true);
-        ProfileReference1d ref = new TimedProfileReference1d(profile);
+        JerkLimitedTimedProfile profile = new JerkLimitedTimedProfile(maxVel, maxAccel, maxJerk, true);
+        ProfileReferenceR1 ref = new TimedProfileReferenceR1(profile);
 
         /*
          * Here we use the Team 100 "Identity" mechanism to allow different
@@ -93,9 +91,9 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
                 int supplyLimit = 60;
                 int statorLimit = 90;
                 double inputOffset = 0.135541;
-                PIDConstants PID = PIDConstants.makeVelocityPID(0.3);
+                PIDConstants PID = PIDConstants.makeVelocityPID(log, 0.3);
                 // you should make a case in the feedforward class for your constants
-                Feedforward100 FF = Feedforward100.makeSimple();
+                Feedforward100 FF = Feedforward100.makeSimple(log);
                 Kraken6Motor motor = new Kraken6Motor(
                         log, new CanId(1), NeutralMode.COAST, MotorPhase.REVERSE, supplyLimit, statorLimit, PID, FF);
                 RotaryPositionSensor sensor = new AS5048RotaryPositionSensor(
@@ -130,8 +128,8 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
         m_servo.setPositionProfiled(goal, 0);
     }
 
-    public void setPositionDirect(Setpoints1d setpoint) {
-        m_servo.setPositionDirect(setpoint, 0);
+    public void setPositionDirect(double goal) {
+        m_servo.setPositionDirect(goal, 0, 0);
     }
 
     ///////////////////////////////////////////////////////

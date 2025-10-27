@@ -2,11 +2,11 @@ package org.team100.lib.localization;
 
 import java.util.Objects;
 
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveDriveKinematics100;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.drivetrain.state.SwerveModuleDeltas;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePositions;
+import org.team100.lib.geometry.GlobalVelocityR3;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveDriveKinematics100;
+import org.team100.lib.motion.swerve.module.state.SwerveModuleDeltas;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -15,7 +15,7 @@ import edu.wpi.first.math.interpolation.Interpolatable;
 class InterpolationRecord implements Interpolatable<InterpolationRecord> {
     private final SwerveDriveKinematics100 m_kinematics;
 
-    final SwerveModel m_state;
+    final ModelR3 m_state;
 
     final SwerveModulePositions m_wheelPositions;
 
@@ -29,7 +29,7 @@ class InterpolationRecord implements Interpolatable<InterpolationRecord> {
      */
     InterpolationRecord(
             SwerveDriveKinematics100 kinematics,
-            SwerveModel state,
+            ModelR3 state,
             SwerveModulePositions wheelPositions) {
         m_kinematics = kinematics;
         m_state = state;
@@ -72,11 +72,11 @@ class InterpolationRecord implements Interpolatable<InterpolationRecord> {
         Pose2d pose = m_state.pose().exp(twist);
 
         // these lerps are wrong but maybe close enough
-        FieldRelativeVelocity startVelocity = m_state.velocity();
-        FieldRelativeVelocity endVelocity = endValue.m_state.velocity();
-        FieldRelativeVelocity velocity = startVelocity.plus(endVelocity.minus(startVelocity).times(t));
+        GlobalVelocityR3 startVelocity = m_state.velocity();
+        GlobalVelocityR3 endVelocity = endValue.m_state.velocity();
+        GlobalVelocityR3 velocity = startVelocity.plus(endVelocity.minus(startVelocity).times(t));
 
-        SwerveModel newState = new SwerveModel(pose, velocity);
+        ModelR3 newState = new ModelR3(pose, velocity);
         return new InterpolationRecord(m_kinematics, newState, wheelLerp);
     }
 

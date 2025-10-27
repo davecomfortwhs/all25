@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
+import org.team100.lib.motor.wpi.BareMotorController100;
 
 class MotorController100Test {
     private static final double DELTA = 0.001;

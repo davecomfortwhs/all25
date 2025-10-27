@@ -1,7 +1,5 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 /**
  * An encoder implementation that doesn't do anything.
  * This is useful if you want to make a mechanism (so you can have gears) but
@@ -10,13 +8,13 @@ import java.util.OptionalDouble;
 public class NoEncoder implements IncrementalBareEncoder {
 
     @Override
-    public OptionalDouble getVelocityRad_S() {
-        return OptionalDouble.empty();
+    public double getVelocityRad_S() {
+        return 0;
     }
 
     @Override
-    public OptionalDouble getPositionRad() {
-        return OptionalDouble.empty();
+    public double getUnwrappedPositionRad() {
+        return 0;
     }
 
     @Override
@@ -28,7 +26,7 @@ public class NoEncoder implements IncrementalBareEncoder {
     }
 
     @Override
-    public void setEncoderPositionRad(double motorPositionRad) {
+    public void setUnwrappedEncoderPositionRad(double motorPositionRad) {
     }
 
     @Override

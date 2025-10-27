@@ -1,29 +1,36 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 /**
  * Absolute rotational measurement, as used in, for example, swerve steering,
  * arm angles, shooter angles, etc. This does not "wind up", it only returns
  * values within [-pi, pi]. This type of sensor cannot be "reset" at runtime,
  * offsets should be fixed at instantiation.
- * 
- * In 2025 these position sensors always sense the absolute position of a
- * mechanism, not through any sort of gearing.
  */
-public interface RotaryPositionSensor  {
+public interface RotaryPositionSensor {
 
     /**
-     * @return Counterclockwise-positive rad in [-pi,pi], empty if disconnected.
+     * Returns the "wrapped" angular position, i.e. this dimension is cyclical, with
+     * values beyond +/- pi mapped back to the +/- pi interval: 2pi is mapped to 0,
+     * 5pi/4 is mapped to pi/4, etc.
+     * 
+     * @return Counterclockwise-positive rad in [-pi,pi]
      */
-    OptionalDouble getPositionRad();
+    double getWrappedPositionRad();
+
+    /**
+     * Counts turns to derive an "unwrapped" position. Note the "zero" of this
+     * measurement is arbitrary, i.e. the number of turns is zero on startup.
+     * 
+     * @return Counterclockwise-positive rad within an infinite domain.
+     */
+    double getUnwrappedPositionRad();
 
     /**
      * Note some velocity implementations can be noisy.
      * 
-     * @return Counterclockwise positive rad/s, empty if disconnected.
+     * @return Counterclockwise positive rad/s
      */
-    OptionalDouble getVelocityRad_S();
+    double getVelocityRad_S();
 
     /**
      * For logging.

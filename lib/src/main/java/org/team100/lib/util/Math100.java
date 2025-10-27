@@ -78,4 +78,19 @@ public class Math100 {
         return new Rotation2d(MathUtil.angleModulus(x.getRadians() - measurement) + measurement);
     }
 
+    public static double notNaN(double x) {
+        if (Double.isNaN(x))
+            throw new IllegalArgumentException("arg is NaN");
+        return x;
+    }
+
+    /** Throw if x is out of range. This is a more strict version of "clamp" :-) */
+    public static double throwIfOutOfRange(double x, double minX, double maxX) {
+        if (x < minX)
+            throw new IllegalArgumentException(String.format("arg is %f which is below %f", x, minX));
+        if (x > maxX)
+            throw new IllegalArgumentException(String.format("arg is %f which is above %f", x, maxX));
+        return x;
+    }
+
 }

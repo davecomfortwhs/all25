@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePosition100;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePositions;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePosition100;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
 import org.team100.lib.state.Model100;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
@@ -22,7 +22,7 @@ class InterpolationRecordTest {
     void testInterp0() {
         // initially at rest, finally in motion.
         // what does the interpolator do?
-        SwerveModel s0 = new SwerveModel();
+        ModelR3 s0 = new ModelR3();
         SwerveModulePositions p0 = new SwerveModulePositions(
                 new SwerveModulePosition100(0, Optional.empty()),
                 new SwerveModulePosition100(0, Optional.empty()),
@@ -40,7 +40,7 @@ class InterpolationRecordTest {
         // so
         // 1 = 1/2 * 1 * t; t = 2, a = 0.5.
 
-        SwerveModel s1 = new SwerveModel(new Model100(), new Model100(), new Model100(1, 1));
+        ModelR3 s1 = new ModelR3(new Model100(), new Model100(), new Model100(1, 1));
         SwerveModulePositions p1 = new SwerveModulePositions(
                 new SwerveModulePosition100(Math.sqrt(2) / 2, Optional.of(new Rotation2d(3 * Math.PI / 4))),
                 new SwerveModulePosition100(Math.sqrt(2) / 2, Optional.of(new Rotation2d(Math.PI / 4))),
@@ -79,7 +79,7 @@ class InterpolationRecordTest {
 
     @Test
     void testInterp1() {
-        SwerveModel s0 = new SwerveModel();
+        ModelR3 s0 = new ModelR3();
         // initally driving straight
         SwerveModulePositions p0 = new SwerveModulePositions(
                 new SwerveModulePosition100(0, Optional.of(new Rotation2d())),
@@ -98,7 +98,7 @@ class InterpolationRecordTest {
         // so
         // 1 = 1/2 * 1 * t; t = 2, a = 0.5.
 
-        SwerveModel s1 = new SwerveModel(new Model100(), new Model100(), new Model100(1, 1));
+        ModelR3 s1 = new ModelR3(new Model100(), new Model100(), new Model100(1, 1));
         SwerveModulePositions p1 = new SwerveModulePositions(
                 new SwerveModulePosition100(Math.sqrt(2) / 2, Optional.of(new Rotation2d(3 * Math.PI / 4))),
                 new SwerveModulePosition100(Math.sqrt(2) / 2, Optional.of(new Rotation2d(Math.PI / 4))),

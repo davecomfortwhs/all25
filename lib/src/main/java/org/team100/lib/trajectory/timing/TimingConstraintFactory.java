@@ -2,7 +2,8 @@ package org.team100.lib.trajectory.timing;
 
 import java.util.List;
 
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
 
 public class TimingConstraintFactory {
     private final SwerveKinodynamics m_limits;
@@ -19,52 +20,53 @@ public class TimingConstraintFactory {
      * If you want to adjust these scales, make a new factory method while you
      * figure out what you need, don't just change them here.
      */
-    public List<TimingConstraint> allGood() {
-        return scaled(0.5, 0.5, 0.2, 0.2);
+    public List<TimingConstraint> allGood(LoggerFactory log) {
+        return scaled(log, 0.5, 0.5, 0.2, 0.2);
     }
 
     /** Absolute maximum. Probably too fast to actually use. */
-    public List<TimingConstraint> fast() {
-        return scaled(1.0, 1.0, 1.0, 0.25);
+    public List<TimingConstraint> fast(LoggerFactory log) {
+        return scaled(log, 1.0, 1.0, 1.0, 0.25);
     }
 
     /** Very slow, 25% speed. */
-    public List<TimingConstraint> slow() {
-        return scaled(0.25, 0.25, 0.25, 0.25);
+    public List<TimingConstraint> slow(LoggerFactory log) {
+        return scaled(log, 0.25, 0.25, 0.25, 0.25);
     }
 
     /** Maybe unrealistically fast? */
-    public List<TimingConstraint> medium() {
-        return scaled(0.75, 1, 0.75, 0.25);
+    public List<TimingConstraint> medium(LoggerFactory log) {
+        return scaled(log, 0.75, 1, 0.75, 0.25);
     }
 
     /** Maybe unrealistically fast? */
-    public List<TimingConstraint> auto() {
-        return scaled(0.77, 0.6, 0.75, 0.5);
+    public List<TimingConstraint> auto(LoggerFactory log) {
+        return scaled(log, 0.77, 0.6, 0.75, 0.5);
     }
 
     /** see TrajectoryVelocityProfileTest.testAuto() */
-    public List<TimingConstraint> testAuto() {
-        return scaled(1, 1, 1, 1);
+    public List<TimingConstraint> testAuto(LoggerFactory log) {
+        return scaled(log, 1, 1, 1, 1);
     }
 
     /**
      * Use absolute max as the constraints. Shouldn't be used on a real robot.
      */
-    public List<TimingConstraint> forTest() {
-        return scaled(1.0, 1.0, 1.0, 1.0);
+    public List<TimingConstraint> forTest(LoggerFactory log) {
+        return scaled(log, 1.0, 1.0, 1.0, 1.0);
     }
 
     private List<TimingConstraint> scaled(
+            LoggerFactory log,
             double vScale,
             double aScale,
             double centripetalScale,
             double yawRateScale) {
         return List.of(
-                new ConstantConstraint(vScale, aScale, m_limits),
-                new SwerveDriveDynamicsConstraint(m_limits, vScale, aScale),
-                new YawRateConstraint(m_limits, yawRateScale),
-                new CapsizeAccelerationConstraint(m_limits, centripetalScale));
+                new ConstantConstraint(log, vScale, aScale, m_limits),
+                new SwerveDriveDynamicsConstraint(log, m_limits, vScale, aScale),
+                new YawRateConstraint(log, m_limits, yawRateScale),
+                new CapsizeAccelerationConstraint(log, m_limits, centripetalScale));
     }
 
 }

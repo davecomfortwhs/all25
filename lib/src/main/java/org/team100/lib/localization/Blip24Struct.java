@@ -12,10 +12,10 @@ public class Blip24Struct implements Struct<Blip24> {
         return Blip24.class;
     }
 
-	@Override
-	public String getTypeName() {
-		return "Blip24";
-	}
+    @Override
+    public String getTypeName() {
+        return "Blip24";
+    }
 
     @Override
     public int getSize() {
@@ -24,7 +24,12 @@ public class Blip24Struct implements Struct<Blip24> {
 
     @Override
     public String getSchema() {
-        return "int id;Transform3d pose";
+        return "int32 id;Transform3d pose";
+    }
+
+    @Override
+    public Struct<?>[] getNested() {
+        return new Struct<?>[] { Transform3d.struct };
     }
 
     @Override

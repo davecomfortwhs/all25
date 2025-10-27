@@ -17,40 +17,40 @@ class CombinedRotaryPositionSensorTest implements Timeless {
 
     @Test
     void testZeroing() {
-        MockBareMotor motor = new MockBareMotor(Feedforward100.makeSimple());
+        MockBareMotor motor = new MockBareMotor(Feedforward100.makeSimple(logger));
 
         // this is the "correct" value
         MockRotaryPositionSensor sensor = new MockRotaryPositionSensor();
         sensor.angle = 1;
-        assertEquals(1, sensor.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(1, sensor.getWrappedPositionRad(), DELTA);
 
         // this value is the "incorrect" value, should be overwritten by the combined
         // encoder constructor.
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         encoder.position = 0;
-        assertEquals(0, encoder.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(0, encoder.getUnwrappedPositionRad(), DELTA);
 
         // the proxy just produces the modulus of the encoder.
         ProxyRotaryPositionSensor proxy = new ProxyRotaryPositionSensor(encoder, 1);
-        assertEquals(0, proxy.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(0, proxy.getWrappedPositionRad(), DELTA);
 
         CombinedRotaryPositionSensor combined = new CombinedRotaryPositionSensor(logger, sensor, proxy);
         // the combined encoder has not been synchronized
-        assertEquals(0.0, combined.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(0.0, combined.getWrappedPositionRad(), DELTA);
 
         RotaryMechanism m = new RotaryMechanism(
                 logger, motor, combined, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         // the mechanism shows the wrong position
-        assertEquals(0.0, m.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(0.0, m.getWrappedPositionRad(), DELTA);
 
         combined.sync();
         // the combined encoder reads the correct value
-        assertEquals(1.0, combined.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(1.0, combined.getWrappedPositionRad(), DELTA);
 
         // and the secondary encoder has been "fixed"
         assertEquals(1.0, encoder.position, DELTA);
 
         // the mechanism shows the right position
-        assertEquals(1.0, m.getPositionRad().getAsDouble(), DELTA);
+        assertEquals(1.0, m.getWrappedPositionRad(), DELTA);
     }
 }

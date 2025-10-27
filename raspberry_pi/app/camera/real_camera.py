@@ -267,8 +267,8 @@ class RealCamera(Camera):
                 "AeEnable": False,
                 "AwbEnable": False,
                 "ExposureTime": RealCamera.__get_exposure_time(identity),
-                # The first comment is the red gain, second is blue gain, values are from testing in the new gym lighting
-                "ColourGains": (1.2,2.2),
+                # The first argument is the red gain, second is blue gain, values are from testing in the new gym lighting(1.2,2.2)
+                "ColourGains": (1.2,2.0),
                 # limit auto: go as fast as possible but no slower than 30fps
                 # without a duration limit, we slow down in the dark, which is fine
                 # "FrameDurationLimits": (5000, 33333),  # 41 fps
@@ -282,7 +282,7 @@ class RealCamera(Camera):
     @staticmethod
     def __get_exposure_time(identity: Identity) -> int:
         """exposure time in microseconds"""
-        return 1000
+        return 500
         # match identity:
         #     case Identity.GLOBAL_RIGHT | Identity.GLOBAL_LEFT:
         #         return 500  # from b5879a6, works with GS cameras

@@ -1,7 +1,6 @@
 # indicator
 
-The `lib.indicator` package supports LED strips.
+The `lib.indicator` package is for things you want the drive team to see.
 
-Currently the main function of LED strips is to indicate whether
-the robot is confident about its location, because the semi-automatic
-scoring sequences rely on precise location.
+* LED strips, using `SolidIndicator`.  This reflects states (steady) and events (flashing briefly).
+* Dashboard messages, using `Alerts`.  These are short text messages.

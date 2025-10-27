@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 // import com.acmerobotics.roadrunner.profile.VelocityConstraint;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.util.Util;
 
 public class JerkLimitedProfileGeneratorTest {
     private static final boolean DEBUG = false;
@@ -42,7 +41,7 @@ public class JerkLimitedProfileGeneratorTest {
                 double v = state.v();
                 double a = state.a();
                 double j = state.j();
-                Util.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
+                System.out.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
                         t, x, v, a, j);
             }
         }
@@ -69,7 +68,7 @@ public class JerkLimitedProfileGeneratorTest {
                 double v = state.v();
                 double a = state.a();
                 double j = state.j();
-                Util.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
+                System.out.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
                         t, x, v, a, j);
             }
         }
@@ -124,7 +123,7 @@ public class JerkLimitedProfileGeneratorTest {
                 double v = state.v();
                 double a = state.a();
                 double j = state.j();
-                Util.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
+                System.out.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n",
                         t, x, v, a, j);
             }
         }

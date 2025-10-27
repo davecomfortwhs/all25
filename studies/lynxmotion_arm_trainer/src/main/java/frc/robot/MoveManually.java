@@ -1,10 +1,8 @@
 package frc.robot;
 
-import java.util.OptionalDouble;
 import java.util.function.DoubleSupplier;
 
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.motion.lynxmotion_arm.LynxArmConfig;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -144,7 +142,7 @@ public class MoveManually extends Command {
         } 
 
         if (DEBUG) {
-            System.out.printf("r %f, rNew %f \n pitch %f \n", r, rNew, getPitch());
+            System.out.printf("r %f, rNew %f \n pitch %f \n", r, rNew, 0);
         }
         
         double roll = 0.0;
@@ -164,7 +162,7 @@ public class MoveManually extends Command {
         
         Pose3d newPose = new Pose3d(
                 new Translation3d(m_x, m_y, m_z),
-                new Rotation3d(roll, getPitch(), yaw));
+                new Rotation3d(roll, 0, yaw));
 
         m_arm.setGrip(m_grip);
         m_arm.setPosition(newPose);

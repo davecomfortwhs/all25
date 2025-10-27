@@ -32,8 +32,8 @@ public class BareMotorGroup implements BareMotor {
     }
 
     @Override
-    public double getPositionRad() {
-        return mean((m) -> m.getPositionRad());
+    public double getUnwrappedPositionRad() {
+        return mean((m) -> m.getUnwrappedPositionRad());
     }
 
     @Override
@@ -42,13 +42,13 @@ public class BareMotorGroup implements BareMotor {
     }
 
     @Override
-    public void setEncoderPositionRad(double positionRad) {
-        apply((m) -> m.setEncoderPositionRad(positionRad));
+    public void setUnwrappedEncoderPositionRad(double positionRad) {
+        apply((m) -> m.setUnwrappedEncoderPositionRad(positionRad));
     }
 
     @Override
-    public void setPosition(double positionRad, double velocityRad_S, double accelRad_S2, double torqueNm) {
-        apply((m) -> m.setPosition(positionRad, velocityRad_S, accelRad_S2, torqueNm));
+    public void setUnwrappedPosition(double positionRad, double velocityRad_S, double accelRad_S2, double torqueNm) {
+        apply((m) -> m.setUnwrappedPosition(positionRad, velocityRad_S, accelRad_S2, torqueNm));
     }
 
     @Override
@@ -79,6 +79,11 @@ public class BareMotorGroup implements BareMotor {
     @Override
     public void periodic() {
         apply((m) -> m.periodic());
+    }
+
+    @Override
+    public void play(double freq) {
+        apply((m) -> m.play(freq));
     }
 
     private void apply(Consumer<BareMotor> f) {

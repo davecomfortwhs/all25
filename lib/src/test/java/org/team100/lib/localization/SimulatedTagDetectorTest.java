@@ -10,7 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.config.Camera;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.hal.HAL;
@@ -47,7 +47,7 @@ public class SimulatedTagDetectorTest {
         SimulatedTagDetector sim = new SimulatedTagDetector(
                 cameras,
                 layout,
-                x -> new SwerveModel(new Pose2d(2.6576, 4.0259, Rotation2d.kZero)));
+                x -> new ModelR3(new Pose2d(2.6576, 4.0259, Rotation2d.kZero)));
         // sim uses alliance from driver station
         DriverStationSim.setAllianceStationId(AllianceStationID.Red1);
         DriverStationSim.notifyNewData();

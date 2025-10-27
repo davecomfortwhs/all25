@@ -1,11 +1,13 @@
 package org.team100.lib.motor;
 
+import org.team100.lib.music.Player;
+
 /**
  * Methods pertain only to the output shaft, not the motion of the attached
  * mechanism. Accordingly, the units are always rotational, and there should be
  * no gear ratios in any implementation.
  */
-public interface BareMotor {
+public interface BareMotor extends Player {
 
     /**
      * Some motors allow torque limiting through current limiting.
@@ -44,27 +46,44 @@ public interface BareMotor {
     double getVelocityRad_S();
 
     /**
+     * Returns the "unwrapped" angular position, i.e. the measurement domain
+     * continues beyond +/- pi.
+     * 
      * Value should be updated in Robot.robotPeriodic().
      * 
      * Motor shaft position.
      */
-    double getPositionRad();
+    double getUnwrappedPositionRad();
 
     /** Motor stator current in amps. */
     double getCurrent();
 
-    void setEncoderPositionRad(double positionRad);
+    /**
+     * This is the "unwrapped" position, i.e. the domain is infinite, not cyclical
+     * within +/- pi.
+     */
+    void setUnwrappedEncoderPositionRad(double positionRad);
 
     /**
-     * Position feedback with friction and velocity feedforward, and holding torque.
+     * Position feedback with feedforward for friction, velocity, acceleration, and
+     * holding torque.
      * 
      * Revolutions wind up; 0 != 2pi.
      * 
+     * This is the "unwrapped" position, i.e. the domain is infinite, not cyclical
+     * within +/- pi
+     * 
+     * Should actuate immediately.
+     * 
+     * Make sure you don't double-count factors of torque/accel.
+     * 
+     * 
      * @param positionRad   radians.
      * @param velocityRad_S rad/s.
+     * @param accelRad_S2   rad/s^2.
      * @param torqueNm      Nm, for gravity compensation or holding.
      */
-    void setPosition(
+    void setUnwrappedPosition(
             double positionRad,
             double velocityRad_S,
             double accelRad_S2,

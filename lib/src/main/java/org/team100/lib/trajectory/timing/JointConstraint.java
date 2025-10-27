@@ -2,17 +2,17 @@ package org.team100.lib.trajectory.timing;
 
 import java.util.Optional;
 
+import org.team100.lib.geometry.GlobalAccelerationR3;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.geometry.Pose2dWithMotion.MotionDirection;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeAcceleration;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.kinematics.AnalyticalJacobian;
-import org.team100.lib.motion.kinematics.ElevatorArmWristKinematics;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.motion.prr.AnalyticalJacobian;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.ElevatorArmWristKinematics;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointVelocities;
+import org.team100.lib.state.ControlR3;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * TODO: make acceleration constraint depend on position, to account for
  * gravity, because it's really a motor torque constraint, not an acceleration
  * constraint per se.
+ * TODO: make this constraint actually work, I think it's broken.
  */
 public class JointConstraint implements TimingConstraint {
     private final ElevatorArmWristKinematics m_k;
@@ -50,9 +51,9 @@ public class JointConstraint implements TimingConstraint {
         Pose2d pose = state.getPose();
         MotionDirection motion = state.getMotionDirection();
         // unit vector in cartesian space
-        FieldRelativeVelocity v = new FieldRelativeVelocity(
+        GlobalVelocityR3 v = new GlobalVelocityR3(
                 motion.dx(), motion.dy(), motion.dtheta());
-        SwerveModel m = new SwerveModel(pose, v);
+        ModelR3 m = new ModelR3(pose, v);
 
         // corresponding vector in joint space
         JointVelocities qdot = m_j.inverse(m);
@@ -69,7 +70,7 @@ public class JointConstraint implements TimingConstraint {
 
         Config q = m_k.inverse(pose);
 
-        FieldRelativeVelocity maxV = m_j.forward(q, maxQdotInMotionDirection);
+        GlobalVelocityR3 maxV = m_j.forward(q, maxQdotInMotionDirection);
         double norm = maxV.norm();
         if (Double.isNaN(norm))
             return new NonNegativeDouble(0);
@@ -90,15 +91,15 @@ public class JointConstraint implements TimingConstraint {
         double omega = velocityM_S * r;
 
         // actual cartesian velocity
-        FieldRelativeVelocity v = new FieldRelativeVelocity(vx, vy, omega);
+        GlobalVelocityR3 v = new GlobalVelocityR3(vx, vy, omega);
 
         Config q = m_k.inverse(pose);
         // actual qdot
-        JointVelocities qdot = m_j.inverse(new SwerveModel(pose, v));
+        JointVelocities qdot = m_j.inverse(new ModelR3(pose, v));
 
         // find accel in motion
-        FieldRelativeAcceleration unitA = new FieldRelativeAcceleration(c, s, r);
-        SwerveControl sc = new SwerveControl(pose, v, unitA);
+        GlobalAccelerationR3 unitA = new GlobalAccelerationR3(c, s, r);
+        ControlR3 sc = new ControlR3(pose, v, unitA);
         // corresponding a vector in joint space
         JointAccelerations qddot = m_j.inverseA(sc);
 
@@ -112,7 +113,7 @@ public class JointConstraint implements TimingConstraint {
         // scale qddot to the nearest maximum
         JointAccelerations maxQddotInMotionDirection = qddot.times(1 / maxScale);
 
-        FieldRelativeAcceleration fa = m_j.forwardA(q, qdot, maxQddotInMotionDirection);
+        GlobalAccelerationR3 fa = m_j.forwardA(q, qdot, maxQddotInMotionDirection);
 
         double norm = fa.norm();
         if (Double.isNaN(norm))

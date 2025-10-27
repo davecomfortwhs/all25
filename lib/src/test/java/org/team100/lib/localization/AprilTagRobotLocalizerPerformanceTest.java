@@ -14,7 +14,7 @@ import org.team100.lib.coherence.Takt;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -35,7 +35,7 @@ class AprilTagRobotLocalizerPerformanceTest {
         AprilTagFieldLayoutWithCorrectOrientation layout = new AprilTagFieldLayoutWithCorrectOrientation();
         List<Pose2d> poseEstimate = new ArrayList<Pose2d>();
         List<Double> timeEstimate = new ArrayList<Double>();
-        DoubleFunction<SwerveModel> history = t -> new SwerveModel(new Rotation2d(-Math.PI / 4));
+        DoubleFunction<ModelR3> history = t -> new ModelR3(new Rotation2d(-Math.PI / 4));
 
         VisionUpdater visionUpdater = new VisionUpdater() {
             @Override

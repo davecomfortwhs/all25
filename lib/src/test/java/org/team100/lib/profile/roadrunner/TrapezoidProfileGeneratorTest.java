@@ -3,7 +3,6 @@ package org.team100.lib.profile.roadrunner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.util.Util;
 
 public class TrapezoidProfileGeneratorTest {
     private static final boolean DEBUG = false;
@@ -23,7 +22,7 @@ public class TrapezoidProfileGeneratorTest {
             double a = state.a();
             double j = state.j();
             if (DEBUG)
-                Util.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n", t, x, v, a, j);
+                System.out.printf("%8.3f %8.3f %8.3f %8.3f %8.3f\n", t, x, v, a, j);
         }
     }
 }

@@ -3,14 +3,13 @@ package org.team100.lib.trajectory;
 import java.util.List;
 import java.util.function.Function;
 
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.HolonomicPose2d;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 import org.team100.lib.trajectory.path.Path100;
 import org.team100.lib.trajectory.path.PathFactory;
 import org.team100.lib.trajectory.timing.ScheduleGenerator;
 import org.team100.lib.trajectory.timing.TimingConstraint;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -110,16 +109,16 @@ public class TrajectoryPlanner {
         return generateTrajectory(waypoints, 0.0, 0.0, mN);
     }
 
-    public Trajectory100 movingToRest(SwerveModel startState, Pose2d end) {
-        return movingToMoving(startState, new SwerveModel(end));
+    public Trajectory100 movingToRest(ModelR3 startState, Pose2d end) {
+        return movingToMoving(startState, new ModelR3(end));
     }
 
-    public Trajectory100 movingToMoving(SwerveModel startState, SwerveModel endState) {
+    public Trajectory100 movingToMoving(ModelR3 startState, ModelR3 endState) {
         Translation2d startTranslation = startState.translation();
-        FieldRelativeVelocity startVelocity = startState.velocity();
+        GlobalVelocityR3 startVelocity = startState.velocity();
 
         Translation2d endTranslation = endState.translation();
-        FieldRelativeVelocity endVelocity = endState.velocity();
+        GlobalVelocityR3 endVelocity = endState.velocity();
 
         // should work with out this.
         if (startVelocity.norm() < VELOCITY_EPSILON && endVelocity.norm() < VELOCITY_EPSILON) {
@@ -150,17 +149,17 @@ public class TrajectoryPlanner {
                     endVelocity.norm(),
                     magicNumbers);
         } catch (TrajectoryGenerationException e) {
-            Util.warn("Trajectory Generation Exception");
+            System.out.println("WARNING: Trajectory Generation Exception");
             return new Trajectory100();
         }
     }
 
-    public Trajectory100 movingToMoving(SwerveModel startState, Rotation2d startCourse, double splineEntranceVelocity, SwerveModel endState, Rotation2d endCourse, double splineExitVelocity) {
+    public Trajectory100 movingToMoving(ModelR3 startState, Rotation2d startCourse, double splineEntranceVelocity, ModelR3 endState, Rotation2d endCourse, double splineExitVelocity) {
         Translation2d startTranslation = startState.translation();
-        FieldRelativeVelocity startVelocity = startState.velocity();
+        GlobalVelocityR3 startVelocity = startState.velocity();
 
         Translation2d endTranslation = endState.translation();
-        FieldRelativeVelocity endVelocity = endState.velocity();
+        GlobalVelocityR3 endVelocity = endState.velocity();
 
         // should work with out this.
         if (startVelocity.norm() < VELOCITY_EPSILON && endVelocity.norm() < VELOCITY_EPSILON) {
@@ -189,13 +188,13 @@ public class TrajectoryPlanner {
                     splineExitVelocity,
                     magicNumbers);
         } catch (TrajectoryGenerationException e) {
-            Util.warn("Trajectory Generation Exception");
+            System.out.println("WARNING: Trajectory Generation Exception");
             return new Trajectory100();
         }
     }
 
-    public Trajectory100 movingToRest(SwerveModel startState, Rotation2d startCourse, double splineEntranceVelocity, Pose2d end, Rotation2d endCourse, double splineExitVelocity) {
-        return movingToMoving(startState, startCourse,splineEntranceVelocity, new SwerveModel(end), endCourse,splineExitVelocity);
+    public Trajectory100 movingToRest(ModelR3 startState, Rotation2d startCourse, double splineEntranceVelocity, Pose2d end, Rotation2d endCourse, double splineExitVelocity) {
+        return movingToMoving(startState, startCourse,splineEntranceVelocity, new ModelR3(end), endCourse,splineExitVelocity);
     }
 
     /**
@@ -240,7 +239,7 @@ public class TrajectoryPlanner {
         } catch (IllegalArgumentException e) {
             // catches various kinds of malformed input, returns a no-op.
             // this should never actually happen.
-            Util.warn("Bad trajectory input!!");
+            System.out.println("WARNING: Bad trajectory input!!");
             // print the stack trace if you want to know who is calling
             // e.printStackTrace();
             return new Trajectory100();
@@ -269,7 +268,7 @@ public class TrajectoryPlanner {
         } catch (IllegalArgumentException e) {
             // catches various kinds of malformed input, returns a no-op.
             // this should never actually happen.
-            Util.warn("Bad trajectory input!!");
+            System.out.println("WARNING: Bad trajectory input!!");
             e.printStackTrace();
             return new Trajectory100();
         }

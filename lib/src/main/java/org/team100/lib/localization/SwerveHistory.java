@@ -4,10 +4,10 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.DoubleFunction;
 
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePositions;
+import org.team100.lib.geometry.GlobalVelocityR3;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
+import org.team100.lib.state.ModelR3;
 import org.team100.lib.util.TimeInterpolatableBuffer100;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,7 +25,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * 
  * Other SwerveModel consumers should use SwerveModelEstimate.
  */
-public class SwerveHistory implements DoubleFunction<SwerveModel> {
+public class SwerveHistory implements DoubleFunction<ModelR3> {
     /**
      * The buffer only needs to be long enough to catch stale-but-still-helpful
      * vision updates.
@@ -51,19 +51,17 @@ public class SwerveHistory implements DoubleFunction<SwerveModel> {
                 timestampSeconds,
                 new InterpolationRecord(
                         m_kinodynamics.getKinematics(),
-                        new SwerveModel(
+                        new ModelR3(
                                 initialPoseMeters,
-                                new FieldRelativeVelocity(0, 0, 0)),
+                                new GlobalVelocityR3(0, 0, 0)),
                         modulePositions));
     }
 
     /**
      * Sample the state estimate buffer.
-     * 
-     * TODO: this should be behind the orchestrator, not used publicly.
      */
     @Override
-    public SwerveModel apply(double timestampSeconds) {
+    public ModelR3 apply(double timestampSeconds) {
         return m_poseBuffer.get(timestampSeconds).m_state;
     }
 
@@ -77,7 +75,7 @@ public class SwerveHistory implements DoubleFunction<SwerveModel> {
                 timestampSeconds,
                 new InterpolationRecord(
                         m_kinodynamics.getKinematics(),
-                        new SwerveModel(pose, new FieldRelativeVelocity(0, 0, 0)),
+                        new ModelR3(pose, new GlobalVelocityR3(0, 0, 0)),
                         modulePositions));
     }
 
@@ -89,7 +87,7 @@ public class SwerveHistory implements DoubleFunction<SwerveModel> {
      */
     void put(
             double timestamp,
-            SwerveModel model,
+            ModelR3 model,
             SwerveModulePositions positions) {
         m_poseBuffer.put(
                 timestamp,

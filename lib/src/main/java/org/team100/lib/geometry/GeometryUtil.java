@@ -2,9 +2,6 @@ package org.team100.lib.geometry;
 
 import java.util.Optional;
 
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.util.Util;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -40,8 +37,9 @@ public class GeometryUtil {
             return a;
         }
         double scale = dot(a, b) / (norm * norm);
-        if (DEBUG)
-            Util.printf("project() scale %.8f\n", scale);
+        if (DEBUG) {
+            System.out.printf("project() scale %.8f\n", scale );
+        }
         return new ChassisSpeeds(
                 b.vxMetersPerSecond * scale,
                 b.vyMetersPerSecond * scale,
@@ -56,7 +54,7 @@ public class GeometryUtil {
         return a.getX() * b.getX() + a.getY() * b.getY();
     }
 
-    public static double dot(Translation2d a, FieldRelativeVelocity b) {
+    public static double dot(Translation2d a, GlobalVelocityR3 b) {
         return a.getX() * b.x() + a.getY() * b.y();
     }
 
@@ -72,8 +70,8 @@ public class GeometryUtil {
         return new Twist2d(twist.dx * scale, twist.dy * scale, twist.dtheta * scale);
     }
 
-    public static FieldRelativeVelocity scale(FieldRelativeVelocity v, double scale) {
-        return new FieldRelativeVelocity(v.x() * scale, v.y() * scale, v.theta() * scale);
+    public static GlobalVelocityR3 scale(GlobalVelocityR3 v, double scale) {
+        return new GlobalVelocityR3(v.x() * scale, v.y() * scale, v.theta() * scale);
     }
 
     public static Pose2d transformBy(Pose2d a, Pose2d b) {

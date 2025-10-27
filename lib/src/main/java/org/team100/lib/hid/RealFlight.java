@@ -4,10 +4,6 @@ import static org.team100.lib.hid.ControlUtil.clamp;
 import static org.team100.lib.hid.ControlUtil.deadband;
 import static org.team100.lib.hid.ControlUtil.expo;
 
-import org.team100.lib.logging.Level;
-import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.LoggerFactory.EnumLogger;
-
 import edu.wpi.first.wpilibj.GenericHID;
 
 /**
@@ -39,65 +35,42 @@ import edu.wpi.first.wpilibj.GenericHID;
  * Left switch is medium speed.
  * Right switch is slow speed.
  */
-public class RealFlight implements DriverControl {
+public class RealFlight {
     private static final double DEADBAND = 0.02;
     private static final double EXPO = 0.5;
     private static final double MEDIUM = 0.5;
     private static final double SLOW = 0.15;
 
     private final GenericHID hid;
-    private final EnumLogger m_log_speed;
 
-    public RealFlight(LoggerFactory parent) {
+    public RealFlight() {
         hid = new GenericHID(0);
-        LoggerFactory child = parent.type(this);
-        m_log_speed = child.enumLogger(Level.TRACE, "control_speed");
-    }
-
-    @Override
-    public String getHIDName() {
-        return hid.getName();
     }
 
     /**
      * Applies expo to each axis individually, works for "square" joysticks.
      * The square response of this joystick should be clamped by the consumer.
      */
-    @Override
+
     public Velocity velocity() {
         final double dx = expo(deadband(-1.0 * clamp(scaled(1), 1), DEADBAND, 1), EXPO);
         final double dy = expo(deadband(-1.0 * clamp(scaled(0), 1), DEADBAND, 1), EXPO);
         final double dtheta = expo(deadband(-1.0 * clamp(scaled(4), 1), DEADBAND, 1), EXPO);
 
-        final Speed speed = speed();
-        m_log_speed.log(() -> speed);
-
-        switch (speed) {
-            case SLOW:
-                return new Velocity(SLOW * dx, SLOW * dy, SLOW * dtheta);
-            case MEDIUM:
-                return new Velocity(MEDIUM * dx, MEDIUM * dy, MEDIUM * dtheta);
-            default:
-                return new Velocity(dx, dy, dtheta);
-        }
+        // left = SLOW
+        if (hid.getRawButton(2))
+            return new Velocity(SLOW * dx, SLOW * dy, SLOW * dtheta);
+        // right = MEDIUM
+        if (hid.getRawButton(3))
+            return new Velocity(MEDIUM * dx, MEDIUM * dy, MEDIUM * dtheta);
+        return new Velocity(dx, dy, dtheta);
     }
 
-    @Override
     public boolean resetRotation0() {
         return hid.getRawButton(1);
     }
 
     /////////////////////////////////////////
-
-    private Speed speed() {
-        // left
-        if (hid.getRawButton(2))
-            return Speed.SLOW;
-        // right
-        if (hid.getRawButton(3))
-            return Speed.MEDIUM;
-        return Speed.NORMAL;
-    }
 
     /**
      * Scale to [-1,1] with the center at 0.

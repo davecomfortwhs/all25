@@ -1,8 +1,8 @@
 package org.team100.frc2025.CalgamesArm;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.kinematics.ElevatorArmWristKinematics;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.ElevatorArmWristKinematics;
 import org.team100.lib.profile.incremental.IncrementalProfile;
 import org.team100.lib.profile.incremental.TrapezoidIncrementalProfile;
 import org.team100.lib.state.Control100;
@@ -61,14 +61,13 @@ public class ProfiledTest {
             Config c = new Config(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
-            if (DEBUG)
+            if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt,
-                        p.getX(), p.getY(), p.getRotation().getRadians(),
-                        c.shoulderHeight(), c.shoulderAngle(), c.wristAngle(),
-                        i1.v(), i2.v(), i3.v(),
-                        i1.a(), i2.a(), i3.a());
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(),
+                        c.shoulderAngle(), c.wristAngle(), i1.v(),
+                        i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
+            }
         }
 
     }
@@ -120,14 +119,13 @@ public class ProfiledTest {
             Config c = new Config(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
-            if (DEBUG)
+            if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt,
-                        p.getX(), p.getY(), p.getRotation().getRadians(),
-                        c.shoulderHeight(), c.shoulderAngle(), c.wristAngle(),
-                        i1.v(), i2.v(), i3.v(),
-                        i1.a(), i2.a(), i3.a());
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(),
+                        c.shoulderAngle(), c.wristAngle(), i1.v(),
+                        i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
+            }
         }
     }
 
@@ -172,14 +170,13 @@ public class ProfiledTest {
             Config c = new Config(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
-            if (DEBUG)
+            if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt,
-                        p.getX(), p.getY(), p.getRotation().getRadians(),
-                        c.shoulderHeight(), c.shoulderAngle(), c.wristAngle(),
-                        i1.v(), i2.v(), i3.v(),
-                        i1.a(), i2.a(), i3.a());
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(), c.shoulderAngle(),
+                        c.wristAngle(), i1.v(),
+                        i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
+            }
         }
     }
 

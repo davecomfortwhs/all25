@@ -3,15 +3,18 @@ package org.team100.frc2025.CalgamesArm;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.GlobalAccelerationR3;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.HolonomicPose2d;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeAcceleration;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.kinematics.AnalyticalJacobian;
-import org.team100.lib.motion.kinematics.ElevatorArmWristKinematics;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.TestLoggerFactory;
+import org.team100.lib.logging.primitive.TestPrimitiveLogger;
+import org.team100.lib.motion.prr.AnalyticalJacobian;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.ElevatorArmWristKinematics;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointVelocities;
+import org.team100.lib.state.ControlR3;
 import org.team100.lib.trajectory.Trajectory100;
 import org.team100.lib.trajectory.TrajectoryPlanner;
 import org.team100.lib.trajectory.timing.ConstantConstraint;
@@ -23,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 /** How do the joints respond to trajectories? */
 public class TrajectoryJointTest {
     private static final boolean DEBUG = false;
+    LoggerFactory log = new TestLoggerFactory(new TestPrimitiveLogger());
 
     /**
      * How does the smooth cartesian trajectory work in configuration space?
@@ -40,8 +44,8 @@ public class TrajectoryJointTest {
     @Test
     void homeToL4() {
         List<TimingConstraint> c = List.of(
-                new ConstantConstraint(1, 1),
-                new YawRateConstraint(1, 1));
+                new ConstantConstraint(log, 1, 1),
+                new YawRateConstraint(log, 1, 1));
         TrajectoryPlanner m_planner = new TrajectoryPlanner(c);
 
         Trajectory100 t = m_planner.restToRest(List.of(
@@ -56,23 +60,21 @@ public class TrajectoryJointTest {
                     .println(
                             "t, x, y, r, vx, vy, vr, ax, ay, ar, q1, q2, q3, q1dot, q2dot, q3dot, q1ddot, q2ddot, q3ddot");
         for (double tt = 0; tt < t.duration(); tt += 0.02) {
-            SwerveControl m = SwerveControl.fromTimedPose(t.sample(tt));
+            ControlR3 m = ControlR3.fromTimedPose(t.sample(tt));
             Pose2d p = m.pose();
-            FieldRelativeVelocity v = m.velocity();
-            FieldRelativeAcceleration a = m.acceleration();
+            GlobalVelocityR3 v = m.velocity();
+            GlobalAccelerationR3 a = m.acceleration();
             Config q = k.inverse(p);
             JointVelocities jv = J.inverse(m.model());
             JointAccelerations ja = J.inverseA(m);
-            if (DEBUG)
+            if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt,
-                        p.getX(), p.getY(), p.getRotation().getRadians(),
-                        v.x(), v.y(), v.theta(),
-                        a.x(), a.y(), a.theta(),
-                        q.shoulderHeight(), q.shoulderAngle(), q.wristAngle(),
-                        jv.elevator(), jv.shoulder(), jv.wrist(),
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), v.x(), v.y(), v.theta(), a.x(),
+                        a.y(), a.theta(), q.shoulderHeight(), q.shoulderAngle(), q.wristAngle(), jv.elevator(),
+                        jv.shoulder(), jv.wrist(),
                         ja.elevator(), ja.shoulder(), ja.wrist());
+            }
         }
     }
 

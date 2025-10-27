@@ -2,16 +2,16 @@ package org.team100.lib.commands;
 
 import java.util.function.BooleanSupplier;
 
-import org.team100.lib.hid.ThirdControl;
+import org.team100.lib.hid.Buttons2025;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Buttons2025Demo {
-    ThirdControl m_control;
+    Buttons2025 m_control;
 
-    public Buttons2025Demo(ThirdControl control) {
+    public Buttons2025Demo(Buttons2025 control) {
         m_control = control;
     }
 

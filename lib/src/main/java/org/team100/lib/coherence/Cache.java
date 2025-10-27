@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.team100.lib.util.Util;
+import org.team100.lib.logging.Level;
+import org.team100.lib.logging.LoggerFactory.DoubleLogger;
+import org.team100.lib.logging.Logging;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -25,6 +27,10 @@ import com.ctre.phoenix6.StatusCode;
  * everything consistent.
  */
 public class Cache {
+    private static final boolean DEBUG = false;
+    /** How long it takes to update the cache. */
+    private static final DoubleLogger m_log_update = Logging.instance().rootLogger.name("Cache")
+            .doubleLogger(Level.COMP, "update time (s)");
     static final List<CotemporalCache<?>> caches = new ArrayList<>();
     private static final List<DoubleCache> doubles = new ArrayList<>();
     private static final List<SideEffect> sideEffects = new ArrayList<>();
@@ -70,8 +76,19 @@ public class Cache {
      * Should be run in Robot.robotPeriodic().
      */
     public static void refresh() {
+        if (DEBUG)
+            System.out.println("Cache refresh");
+        double startUpdateS = Takt.actual();
         reset();
         update();
+        m_log_update.log(() -> (Takt.actual() - startUpdateS));
+    }
+
+    /** For testing only */
+    public static void clear() {
+        caches.clear();
+        doubles.clear();
+        sideEffects.clear();
     }
 
     /////////////////////////////////////////////////
@@ -93,16 +110,25 @@ public class Cache {
 
     /** Fetches fresh values for every stale cache. Should be called after reset. */
     private static void update() {
+        if (DEBUG) {
+            System.out.printf("Cache update %d\n", caches.size());
+        }
         if (!signals.isEmpty()) {
             StatusCode result = BaseStatusSignal.refreshAll(signals.toArray(new BaseStatusSignal[0]));
             if (result != StatusCode.OK) {
-                Util.warnf("RefreshAll failed: %s: %s\n", result.toString(), result.getDescription());
+                System.out.printf("WARNING: RefreshAll failed: %s: %s\n",
+                        result.toString(), result.getDescription());
             }
         }
         for (CotemporalCache<?> r : caches) {
+            if (DEBUG) {
+                System.out.printf("update %s\n", r.get().getClass().getSimpleName());
+            }
             r.get();
         }
         for (DoubleCache r : doubles) {
+            if (DEBUG)
+                System.out.println("double update");
             r.getAsDouble();
         }
         for (SideEffect r : sideEffects) {

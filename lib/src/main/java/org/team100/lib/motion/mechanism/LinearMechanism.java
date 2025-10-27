@@ -1,12 +1,11 @@
 package org.team100.lib.motion.mechanism;
 
-import java.util.OptionalDouble;
-
 import org.team100.lib.encoder.IncrementalBareEncoder;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.LoggerFactory.OptionalDoubleLogger;
+import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.motor.BareMotor;
+import org.team100.lib.music.Player;
 
 /**
  * Uses a motor, gears, and a wheel to produce linear output, e.g. a drive wheel
@@ -15,15 +14,17 @@ import org.team100.lib.motor.BareMotor;
  * The limits used to be enforced by a proxy, but now they're here: it seems
  * simpler that way.
  */
-public class LinearMechanism {
+public class LinearMechanism implements Player {
+    private static final boolean DEBUG = false;
+
     private final BareMotor m_motor;
     private final IncrementalBareEncoder m_encoder;
     private final double m_gearRatio;
     private final double m_wheelRadiusM;
     private final double m_minPositionM;
     private final double m_maxPositionM;
-    private final OptionalDoubleLogger m_log_velocity;
-    private final OptionalDoubleLogger m_log_position;
+    private final DoubleLogger m_log_velocity;
+    private final DoubleLogger m_log_position;
 
     public LinearMechanism(
             LoggerFactory parent,
@@ -40,8 +41,8 @@ public class LinearMechanism {
         m_minPositionM = minPositionM;
         m_maxPositionM = maxPositionM;
         LoggerFactory child = parent.type(this);
-        m_log_velocity = child.optionalDoubleLogger(Level.DEBUG, "velocity (m_s)");
-        m_log_position = child.optionalDoubleLogger(Level.DEBUG, "position (m)");
+        m_log_velocity = child.doubleLogger(Level.DEBUG, "velocity (m_s)");
+        m_log_position = child.doubleLogger(Level.DEBUG, "position (m)");
     }
 
     /** Should actuate immediately. Use for homing. */
@@ -51,12 +52,7 @@ public class LinearMechanism {
 
     /** Should actuate immediately. Limits position using the encoder. */
     public void setDutyCycle(double output) {
-        OptionalDouble posOpt = getPositionM();
-        if (posOpt.isEmpty()) {
-            m_motor.stop();
-            return;
-        }
-        double posM = posOpt.getAsDouble();
+        double posM = getPositionM();
         if (output < 0 && posM < m_minPositionM) {
             m_motor.stop();
             return;
@@ -85,12 +81,10 @@ public class LinearMechanism {
             double outputVelocityM_S,
             double outputAccelM_S2,
             double outputForceN) {
-        OptionalDouble posOpt = getPositionM();
-        if (posOpt.isEmpty()) {
-            m_motor.stop();
-            return;
+        if (DEBUG) {
+            System.out.printf("velocity %6.3f\n", outputVelocityM_S);
         }
-        double posM = posOpt.getAsDouble();
+        double posM = getPositionM();
         if (outputVelocityM_S < 0 && posM < m_minPositionM) {
             m_motor.stop();
             return;
@@ -106,43 +100,44 @@ public class LinearMechanism {
     }
 
     /**
-     * Should actuate immediately. Limits position using the argument to this
-     * function.
+     * Apply limits, use wheel diameter, and gear ratio, and set the resulting
+     * motor position.
+     * 
+     * Should actuate immediately.
+     * 
+     * Make sure you don't double-count factors of torque/accel.
      */
     public void setPosition(
-            double outputPositionM,
-            double outputVelocityM_S,
-            double outputAccelM_S2,
-            double outputForceN) {
-        if (outputPositionM < m_minPositionM) {
+            double positionM,
+            double velocityM_S,
+            double accelM_S2,
+            double forceN) {
+        if (positionM < m_minPositionM) {
             m_motor.stop();
             return;
         }
-        if (outputPositionM > m_maxPositionM) {
+        if (positionM > m_maxPositionM) {
             m_motor.stop();
             return;
         }
-        m_motor.setPosition(
-                (outputPositionM / m_wheelRadiusM) * m_gearRatio,
-                (outputVelocityM_S / m_wheelRadiusM) * m_gearRatio,
-                (outputAccelM_S2 / m_wheelRadiusM) * m_gearRatio,
-                outputForceN * m_wheelRadiusM / m_gearRatio);
+        m_motor.setUnwrappedPosition(
+                (positionM / m_wheelRadiusM) * m_gearRatio,
+                (velocityM_S / m_wheelRadiusM) * m_gearRatio,
+                (accelM_S2 / m_wheelRadiusM) * m_gearRatio,
+                forceN * m_wheelRadiusM / m_gearRatio);
     }
 
     /** Nearly cached. */
-    public OptionalDouble getVelocityM_S() {
-        OptionalDouble velocityRad_S = m_encoder.getVelocityRad_S();
-        if (velocityRad_S.isEmpty())
-            return OptionalDouble.empty();
-        return OptionalDouble.of(velocityRad_S.getAsDouble() * m_wheelRadiusM / m_gearRatio);
+    public double getVelocityM_S() {
+        double velocityRad_S = m_encoder.getVelocityRad_S();
+        return velocityRad_S * m_wheelRadiusM / m_gearRatio;
     }
 
     /** Nearly cached. */
-    public OptionalDouble getPositionM() {
-        OptionalDouble positionRad = m_encoder.getPositionRad();
-        if (positionRad.isEmpty())
-            return OptionalDouble.empty();
-        return OptionalDouble.of(positionRad.getAsDouble() * m_wheelRadiusM / m_gearRatio);
+    public double getPositionM() {
+        double positionRad = m_encoder.getUnwrappedPositionRad();
+
+        return positionRad * m_wheelRadiusM / m_gearRatio;
     }
 
     /** This is not "hold position" this is "torque off". */
@@ -168,6 +163,11 @@ public class LinearMechanism {
         m_encoder.periodic();
         m_log_position.log(this::getPositionM);
         m_log_velocity.log(this::getVelocityM_S);
+    }
+
+    @Override
+    public void play(double freq) {
+        m_motor.play(freq);
     }
 
 }

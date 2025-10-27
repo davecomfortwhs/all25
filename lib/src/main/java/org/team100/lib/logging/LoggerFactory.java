@@ -8,21 +8,22 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
+import org.team100.lib.geometry.GlobalAccelerationR3;
+import org.team100.lib.geometry.GlobalDeltaR3;
+import org.team100.lib.geometry.GlobalVelocityR3;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.localization.Blip24;
 import org.team100.lib.logging.primitive.PrimitiveLogger;
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeAcceleration;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeDelta;
-import org.team100.lib.motion.drivetrain.state.FieldRelativeVelocity;
-import org.team100.lib.motion.drivetrain.state.SwerveControl;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
-import org.team100.lib.motion.drivetrain.state.SwerveModulePosition100;
-import org.team100.lib.motion.kinematics.JointAccelerations;
-import org.team100.lib.motion.kinematics.JointForce;
-import org.team100.lib.motion.kinematics.JointVelocities;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.JointAccelerations;
+import org.team100.lib.motion.prr.JointForce;
+import org.team100.lib.motion.prr.JointVelocities;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePosition100;
+import org.team100.lib.motion.swerve.module.state.SwerveModulePositions;
 import org.team100.lib.state.Control100;
+import org.team100.lib.state.ControlR3;
 import org.team100.lib.state.Model100;
+import org.team100.lib.state.ModelR3;
 import org.team100.lib.trajectory.timing.TimedPose;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -74,7 +75,7 @@ public class LoggerFactory {
      * Each child level is separated by slashes, to make a tree in glass.
      */
     public LoggerFactory name(String stem) {
-        return new LoggerFactory(m_level, m_root + "/" + stem, m_pLogger);
+        return new LoggerFactory(m_level, root(stem), m_pLogger);
     }
 
     /**
@@ -86,6 +87,20 @@ public class LoggerFactory {
         return name(obj.getClass().getSimpleName());
     }
 
+    public String getRoot() {
+        return m_root;
+    }
+
+    /** @return root/stem */
+    public String root(String stem) {
+        return m_root + "/" + stem;
+    }
+
+    /** @return a/b */
+    public String join(String a, String b) {
+        return a + "/" + b;
+    }
+    
     //////////////////////////////////////////////////////
 
     private boolean allow(Level level) {
@@ -95,16 +110,6 @@ public class LoggerFactory {
             return true;
         }
         return allowed.admit(level);
-    }
-
-    /** @return root/stem */
-    private String root(String stem) {
-        return m_root + "/" + stem;
-    }
-
-    /** @return a/b */
-    private String join(String a, String b) {
-        return a + "/" + b;
     }
 
     /////////////////////////////////////////////////////
@@ -575,85 +580,85 @@ public class LoggerFactory {
         return new ChassisSpeedsLogger(level, leaf);
     }
 
-    public class FieldRelativeDeltaLogger {
+    public class GlobaDeltaR3Logger {
         private final Level m_level;
         private final DoubleLogger m_xLogger;
         private final DoubleLogger m_yLogger;
         private final DoubleLogger m_thetaLogger;
 
-        FieldRelativeDeltaLogger(Level level, String leaf) {
+        GlobaDeltaR3Logger(Level level, String leaf) {
             m_level = level;
             m_xLogger = doubleLogger(level, join(leaf, "x m"));
             m_yLogger = doubleLogger(level, join(leaf, "y m"));
             m_thetaLogger = doubleLogger(level, join(leaf, "theta rad"));
         }
 
-        public void log(Supplier<FieldRelativeDelta> vals) {
+        public void log(Supplier<GlobalDeltaR3> vals) {
             if (!allow(m_level))
                 return;
-            FieldRelativeDelta val = vals.get();
+            GlobalDeltaR3 val = vals.get();
             m_xLogger.log(val::getX);
             m_yLogger.log(val::getY);
             m_thetaLogger.log(val::getRadians);
         }
     }
 
-    public FieldRelativeDeltaLogger fieldRelativeDeltaLogger(Level level, String leaf) {
-        return new FieldRelativeDeltaLogger(level, leaf);
+    public GlobaDeltaR3Logger globalDeltaR3Logger(Level level, String leaf) {
+        return new GlobaDeltaR3Logger(level, leaf);
     }
 
-    public class FieldRelativeVelocityLogger {
+    public class GlobalVelocityR3Logger {
         private final Level m_level;
         private final DoubleLogger m_xLogger;
         private final DoubleLogger m_yLogger;
         private final DoubleLogger m_thetaLogger;
 
-        FieldRelativeVelocityLogger(Level level, String leaf) {
+        GlobalVelocityR3Logger(Level level, String leaf) {
             m_level = level;
             m_xLogger = doubleLogger(level, join(leaf, "x m_s"));
             m_yLogger = doubleLogger(level, join(leaf, "y m_s"));
             m_thetaLogger = doubleLogger(level, join(leaf, "theta rad_s"));
         }
 
-        public void log(Supplier<FieldRelativeVelocity> vals) {
+        public void log(Supplier<GlobalVelocityR3> vals) {
             if (!allow(m_level))
                 return;
-            FieldRelativeVelocity val = vals.get();
+            GlobalVelocityR3 val = vals.get();
             m_xLogger.log(val::x);
             m_yLogger.log(val::y);
             m_thetaLogger.log(val::theta);
         }
     }
 
-    public FieldRelativeVelocityLogger fieldRelativeVelocityLogger(Level level, String leaf) {
-        return new FieldRelativeVelocityLogger(level, leaf);
+    public GlobalVelocityR3Logger globalVelocityR3Logger(Level level, String leaf) {
+        return new GlobalVelocityR3Logger(level, leaf);
     }
 
-    public class FieldRelativeAccelerationLogger {
+    public class GlobalAccelerationR3Logger {
         private final Level m_level;
         private final DoubleLogger m_xLogger;
         private final DoubleLogger m_yLogger;
         private final DoubleLogger m_thetaLogger;
 
-        FieldRelativeAccelerationLogger(Level level, String leaf) {
+        GlobalAccelerationR3Logger(Level level, String leaf) {
             m_level = level;
             m_xLogger = doubleLogger(level, join(leaf, "x m_s_s"));
             m_yLogger = doubleLogger(level, join(leaf, "y m_s_s"));
             m_thetaLogger = doubleLogger(level, join(leaf, "theta rad_s_s"));
         }
 
-        public void log(Supplier<FieldRelativeAcceleration> vals) {
+        public void log(Supplier<GlobalAccelerationR3> vals) {
             if (!allow(m_level))
                 return;
-            FieldRelativeAcceleration val = vals.get();
+            GlobalAccelerationR3 val = vals.get();
             m_xLogger.log(val::x);
             m_yLogger.log(val::y);
             m_thetaLogger.log(val::theta);
         }
     }
 
-    public FieldRelativeAccelerationLogger fieldRelativeAccelerationLogger(Level level, String leaf) {
-        return new FieldRelativeAccelerationLogger(level, leaf);
+    public GlobalAccelerationR3Logger globalAccelerationR3Logger(Level level, String leaf) {
+        return new GlobalAccelerationR3Logger(level, leaf);
     }
 
     public class Model100Logger {
@@ -703,62 +708,62 @@ public class LoggerFactory {
         return new Control100Logger(level, leaf);
     }
 
-    public class SwerveControlLogger {
+    public class ControlR3Logger {
         private final Level m_level;
         private final Control100Logger m_xLogger;
         private final Control100Logger m_yLogger;
         private final Control100Logger m_thetaLogger;
 
-        SwerveControlLogger(Level level, String leaf) {
+        ControlR3Logger(Level level, String leaf) {
             m_level = level;
             m_xLogger = control100Logger(level, join(leaf, "x"));
             m_yLogger = control100Logger(level, join(leaf, "y"));
             m_thetaLogger = control100Logger(level, join(leaf, "theta"));
         }
 
-        public void log(Supplier<SwerveControl> vals) {
+        public void log(Supplier<ControlR3> vals) {
             if (!allow(m_level))
                 return;
-            SwerveControl val = vals.get();
+            ControlR3 val = vals.get();
             m_xLogger.log(val::x);
             m_yLogger.log(val::y);
             m_thetaLogger.log(val::theta);
         }
     }
 
-    public SwerveControlLogger swerveControlLogger(Level level, String leaf) {
-        return new SwerveControlLogger(level, leaf);
+    public ControlR3Logger controlR3Logger(Level level, String leaf) {
+        return new ControlR3Logger(level, leaf);
     }
 
     public Model100Logger model100Logger(Level level, String leaf) {
         return new Model100Logger(level, leaf);
     }
 
-    public class SwerveModelLogger {
+    public class ModelR3Logger {
         private final Level m_level;
         private final Model100Logger m_xLogger;
         private final Model100Logger m_yLogger;
         private final Model100Logger m_thetaLogger;
 
-        SwerveModelLogger(Level level, String leaf) {
+        ModelR3Logger(Level level, String leaf) {
             m_level = level;
             m_xLogger = model100Logger(level, join(leaf, "x"));
             m_yLogger = model100Logger(level, join(leaf, "y"));
             m_thetaLogger = model100Logger(level, join(leaf, "theta"));
         }
 
-        public void log(Supplier<SwerveModel> vals) {
+        public void log(Supplier<ModelR3> vals) {
             if (!allow(m_level))
                 return;
-            SwerveModel val = vals.get();
+            ModelR3 val = vals.get();
             m_xLogger.log(val::x);
             m_yLogger.log(val::y);
             m_thetaLogger.log(val::theta);
         }
     }
 
-    public SwerveModelLogger swerveModelLogger(Level level, String leaf) {
-        return new SwerveModelLogger(level, leaf);
+    public ModelR3Logger modelR3Logger(Level level, String leaf) {
+        return new ModelR3Logger(level, leaf);
     }
 
     public class SwerveModulePosition100Logger {
@@ -777,14 +782,45 @@ public class LoggerFactory {
                 return;
             SwerveModulePosition100 val = vals.get();
             m_distanceLogger.log(() -> val.distanceMeters);
-            if (val.angle.isPresent()) {
-                m_rotation2dLogger.log(val.angle::get);
+            if (val.unwrappedAngle.isPresent()) {
+                m_rotation2dLogger.log(val.unwrappedAngle::get);
             }
         }
     }
 
     public SwerveModulePosition100Logger swerveModulePosition100Logger(Level level, String leaf) {
         return new SwerveModulePosition100Logger(level, leaf);
+    }
+
+    public class SwerveModulePositionsLogger {
+        private final Level m_level;
+
+        private final SwerveModulePosition100Logger m_frontLeft;
+        private final SwerveModulePosition100Logger m_frontRight;
+        private final SwerveModulePosition100Logger m_rearLeft;
+        private final SwerveModulePosition100Logger m_rearRight;
+
+        SwerveModulePositionsLogger(Level level, String leaf) {
+            m_level = level;
+            m_frontLeft = swerveModulePosition100Logger(level, join(leaf, "front left"));
+            m_frontRight = swerveModulePosition100Logger(level, join(leaf, "front right"));
+            m_rearLeft = swerveModulePosition100Logger(level, join(leaf, "rear left"));
+            m_rearRight = swerveModulePosition100Logger(level, join(leaf, "rear right"));
+        }
+
+        public void log(Supplier<SwerveModulePositions> vals) {
+            if (!allow(m_level))
+                return;
+            SwerveModulePositions val = vals.get();
+            m_frontLeft.log(val::frontLeft);
+            m_frontRight.log(val::frontRight);
+            m_rearLeft.log(val::rearLeft);
+            m_rearRight.log(val::rearRight);
+        }
+    }
+
+    public SwerveModulePositionsLogger swerveModulePositionsLogger(Level level, String leaf) {
+        return new SwerveModulePositionsLogger(level, leaf);
     }
 
     // public class ArmAnglesLogger {

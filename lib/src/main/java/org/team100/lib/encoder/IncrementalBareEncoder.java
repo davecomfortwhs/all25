@@ -1,31 +1,26 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 /** Represents motor-shaft encoder, probably some kind of built-in. */
-public interface IncrementalBareEncoder  {
+public interface IncrementalBareEncoder {
+
+    /**
+     * Returns the "unwrapped" angular position, i.e. the measurement domain
+     * continues beyond +/- pi.
+     * 
+     * Value should be updated in Robot.robotPeriodic().
+     * 
+     * @return rad
+     */
+    double getUnwrappedPositionRad();
 
     /**
      * Value should be updated in Robot.robotPeriodic().
      * 
      * Note some rate implementations can be noisy.
      * 
-     * If the encoder can't return a valid measurement (e.g. because hardware is not
-     * connected), return empty.
-     * 
      * @return rad/s
      */
-    OptionalDouble getVelocityRad_S();
-
-    /**
-     * Value should be updated in Robot.robotPeriodic().
-     * 
-     * If the encoder can't return a valid measurement (e.g. because hardware is not
-     * connected), return empty.
-     * 
-     * @return rad
-     */
-    OptionalDouble getPositionRad();
+    double getVelocityRad_S();
 
     /**
      * Resets position to zero.
@@ -43,11 +38,14 @@ public interface IncrementalBareEncoder  {
      * Sets the incremental encoder position. This is only used to "zero" it, and
      * only done by the ProxyRotaryPositionSensor.
      * 
+     * This is the "unwrapped" position, i.e. the domain is infinite, not cyclical
+     * within +/- pi.
+     * 
      * This is very slow, only use it on startup.
      * 
      * Caches should also be flushed, so the new value is available immediately.
      */
-    void setEncoderPositionRad(double motorPositionRad);
+    void setUnwrappedEncoderPositionRad(double motorPositionRad);
 
     /** For logging */
     void periodic();

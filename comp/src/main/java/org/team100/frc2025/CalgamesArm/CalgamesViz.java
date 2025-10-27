@@ -1,7 +1,6 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.motion.Config;
-
+import org.team100.lib.motion.prr.Config;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;

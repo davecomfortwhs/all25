@@ -7,6 +7,8 @@ import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.Neo550CANSparkMotor;
+import org.team100.lib.motor.NeutralMode;
+import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -18,8 +20,14 @@ public class PivotSubsystem extends SubsystemBase {
     public PivotSubsystem(LoggerFactory parent, int currentLimit) {
         LoggerFactory logger = parent.type(this);
         m_log_angle = logger.doubleLogger(Level.TRACE, "Angle (rad)");
-        m_pivot = new Neo550CANSparkMotor(logger, 5, MotorPhase.FORWARD,
-                currentLimit, Feedforward100.makeNeo550(), new PIDConstants());
+        m_pivot = new Neo550CANSparkMotor(
+                logger,
+                new CanId(5),
+                NeutralMode.BRAKE,
+                MotorPhase.FORWARD,
+                currentLimit,
+                Feedforward100.makeNeo550(),
+                new PIDConstants());
     }
 
     public void dutyCycle(double set) {

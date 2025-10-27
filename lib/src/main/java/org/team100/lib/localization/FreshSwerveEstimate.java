@@ -4,14 +4,14 @@ import java.util.function.DoubleFunction;
 
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.SideEffect;
-import org.team100.lib.motion.drivetrain.state.SwerveModel;
+import org.team100.lib.state.ModelR3;
 
 /**
  * Proxy the history after making sure it has received any updates that may
  * mutate it. Some clients want "fresh" estimates, and should use this class;
  * other clients only need old historical estimates, and should use the history.
  */
-public class FreshSwerveEstimate implements DoubleFunction<SwerveModel> {
+public class FreshSwerveEstimate implements DoubleFunction<ModelR3> {
     private final SwerveHistory m_history;
     /** Side effect mutates history. */
     private final SideEffect m_vision;
@@ -32,7 +32,7 @@ public class FreshSwerveEstimate implements DoubleFunction<SwerveModel> {
      * making sure any pending updates from vision or odometry have been applied.
      */
     @Override
-    public SwerveModel apply(double timestampS) {
+    public ModelR3 apply(double timestampS) {
         // run our dependencies if they haven't already
         m_vision.run();
         m_odometry.run();

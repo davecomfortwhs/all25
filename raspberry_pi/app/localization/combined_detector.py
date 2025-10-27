@@ -143,11 +143,14 @@ class CombinedDetector(Interpreter):
         
         for c in contours:
             mmnts = cv2.moments(c)
-            if mmnts["m00"] < 500:  # Minimum contour area
+            if ( mmnts["m00"] == 0):
                 continue
-
-            cX = int(mmnts["m10"] / mmnts["m00"])
             cY = int(mmnts["m01"] / mmnts["m00"])
+            if (mmnts["m00"] < 500 or mmnts["m00"] > ((30000)*((self.height/2)/(self.height-cY+1))))  :  # Minimum contour area
+                continue
+                #calculates how big the object is based on how far it is.
+            cX = int(mmnts["m10"] / mmnts["m00"])
+            
             
             points_to_undistort.append([cX, cY])
             contour_info.append((c, cX, cY))
@@ -168,6 +171,7 @@ class CombinedDetector(Interpreter):
                 self.display.note(img_display, c, orig_cX, orig_cY)
 
         self._notes.send(objects, delay_us)
+        #self.display.put(img_range)
 
     @override
     def analyze(self, req: Request) -> None:

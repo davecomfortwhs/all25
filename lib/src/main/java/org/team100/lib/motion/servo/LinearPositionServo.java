@@ -1,13 +1,11 @@
 package org.team100.lib.motion.servo;
 
-import java.util.OptionalDouble;
-
-import org.team100.lib.reference.Setpoints1d;
+import org.team100.lib.reference.r1.SetpointsR1;
 
 /**
  * Linear position control, e.g. for elevators.
  */
-public interface LinearPositionServo  {
+public interface LinearPositionServo {
     /**
      * It is essential to call this after a period of disuse, to prevent transients.
      * 
@@ -30,14 +28,14 @@ public interface LinearPositionServo  {
      * This takes both current and next setpoints so that the implementation can
      * choose the current one for feedback and the next one for feedforward.
      */
-    void setPositionDirect(Setpoints1d setpoint, double feedForwardTorqueNm);
+    void setPositionDirect(SetpointsR1 setpoint, double feedForwardTorqueNm);
 
-    OptionalDouble getPosition();
+    double getPosition();
 
-    OptionalDouble getVelocity();
+    double getVelocity();
 
     boolean atSetpoint();
-    
+
     boolean profileDone();
 
     /** Profile is done and we're on the setpoint. */

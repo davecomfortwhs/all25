@@ -43,8 +43,6 @@ public interface LynxArmKinematics {
      * This method projects the grip axis into the yaw-Z plane, finds the rotation
      * from the grip axis to that rotation, and applies it. This results in less
      * error than the method below.
-     * 
-     * TODO: add workspace envelope fixing
      */
     static Pose3d fix(Pose3d p) {
         Translation3d x = new Translation3d(1, 0, 0);
@@ -57,8 +55,9 @@ public interface LynxArmKinematics {
         }
         // it's not vertical.
         double yaw = p.getTranslation().toTranslation2d().getAngle().getRadians();
-        if (DEBUG)
+        if (DEBUG) {
             System.out.printf("yaw %s\n", yaw);
+        }
 
         Vector<N3> normal = Vector.cross(
                 VecBuilder.fill(Math.cos(yaw), Math.sin(yaw), 0),
@@ -92,8 +91,9 @@ public interface LynxArmKinematics {
         }
         // it's not vertical.
         double yaw = p.getTranslation().toTranslation2d().getAngle().getRadians();
-        if (DEBUG)
+        if (DEBUG) {
             System.out.printf("yaw %s\n", yaw);
+        }
         return new Pose3d(new Translation3d(p.getX(), p.getY(), p.getZ()),
                 new Rotation3d(p.getRotation().getX(), p.getRotation().getY(), yaw));
 

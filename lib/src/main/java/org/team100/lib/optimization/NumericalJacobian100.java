@@ -48,13 +48,13 @@ public class NumericalJacobian100 {
             Function<Vector<X>, Vector<Y>> f,
             Vector<X> x) {
         final Vector<Y> Y = f.apply(x);
-        // System.out.printf("*** x %s Y %s\n", Util.vecStr(x), Util.vecStr(Y));
+        // System.out.printf("*** x %s Y %s\n", StrUtil.vecStr(x), StrUtil.vecStr(Y));
         Matrix<Y, X> result = new Matrix<>(ydim, xdim);
         for (int colI = 0; colI < xdim.getNum(); colI++) {
             final double xi = x.get(colI);
             x.set(colI, 0, xi + DX);
             final Vector<Y> Y1 = f.apply(x);
-            // System.out.printf("x %s Y1 %s\n", Util.vecStr(x),  Util.vecStr(Y1));
+            // System.out.printf("x %s Y1 %s\n", StrUtil.vecStr(x),  StrUtil.vecStr(Y1));
             for (int rowI = 0; rowI < ydim.getNum(); rowI++) {
                 double dy = Y1.get(rowI) - Y.get(rowI);
                 double dydx = dy / DX;

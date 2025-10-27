@@ -7,7 +7,8 @@ import java.util.function.Function;
 import org.team100.lib.field.FieldConstants;
 import org.team100.lib.field.FieldConstants.CoralStation;
 import org.team100.lib.geometry.HolonomicPose2d;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.trajectory.Trajectory100;
 import org.team100.lib.trajectory.TrajectoryPlanner;
 import org.team100.lib.trajectory.timing.TimingConstraintFactory;
@@ -26,13 +27,14 @@ public class GoToCoralStation implements Function<Pose2d, Trajectory100> {
     private final TrajectoryPlanner m_planner;
 
     public GoToCoralStation(
+            LoggerFactory log,
             SwerveKinodynamics kinodynamics,
             CoralStation station,
             double scale) {
         m_station = station;
         m_scale = scale;
         m_planner = new TrajectoryPlanner(
-                new TimingConstraintFactory(kinodynamics).auto());
+                new TimingConstraintFactory(kinodynamics).auto(log.type(this)));
     }
 
     @Override

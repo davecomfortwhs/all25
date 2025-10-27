@@ -7,7 +7,6 @@ import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.logging.Logging;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.hal.DriverStationJNI;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -20,7 +19,7 @@ import edu.wpi.first.wpilibj.IterativeRobotBase;
  * Copy of {@link edu.wpi.first.wpilibj.TimedRobot} in an effort to improve
  * instrumentation.
  */
-public class TimedRobot100 extends IterativeRobotBase  {
+public class TimedRobot100 extends IterativeRobotBase {
 
     static class Callback implements Comparable<Callback> {
         public Runnable func;
@@ -126,7 +125,7 @@ public class TimedRobot100 extends IterativeRobotBase  {
         }
 
         // Tell the DS that the robot is ready to be enabled
-        Util.println("********** Robot program startup complete **********");
+        System.out.println("********** Robot program startup complete **********");
         DriverStationJNI.observeUserProgramStarting();
 
         // Loop forever, calling the appropriate mode-dependent function
@@ -149,7 +148,7 @@ public class TimedRobot100 extends IterativeRobotBase  {
             double slackS = endWaitingS - startWaitingS;
             // this is the main loop slack, don't let it go to zero!
             if (Logging.instance().getLevel().admit(Level.TRACE) && slackS < 0.001) {
-                Util.warnf("Slack time %f is too low!\n", slackS);
+                System.out.printf("WARNING: Slack time %f is too low!\n", slackS);
             }
             m_log_slack.log(() -> slackS);
 

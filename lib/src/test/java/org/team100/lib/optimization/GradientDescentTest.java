@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.GeometryUtil;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -45,9 +44,9 @@ public class GradientDescentTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.println("Gradient descent over quadratic");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Gradient descent over quadratic");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -65,9 +64,9 @@ public class GradientDescentTest {
         }
         long finishTime = System.currentTimeMillis();
         if (DEBUG) {
-            Util.println("Gradient descent over quadratic");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Gradient descent over quadratic");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -106,9 +105,9 @@ public class GradientDescentTest {
         long finishTime = System.currentTimeMillis();
 
         if (DEBUG) {
-            Util.println("Gradient descent over tangent norm");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Gradient descent over tangent norm");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 

@@ -6,7 +6,6 @@ import java.util.function.DoubleUnaryOperator;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.GeometryUtil;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -62,9 +61,9 @@ public class GoldenSectionSearchTest {
         long finishTime = System.currentTimeMillis();
 
         if (DEBUG) {
-            Util.println("Golden section search on quadratic");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Golden section search on quadratic");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -105,9 +104,9 @@ public class GoldenSectionSearchTest {
         long finishTime = System.currentTimeMillis();
 
         if (DEBUG) {
-            Util.println("Golden section search on tangent norm");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Golden section search on tangent norm");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 
@@ -162,9 +161,9 @@ public class GoldenSectionSearchTest {
         long finishTime = System.currentTimeMillis();
 
         if (DEBUG) {
-            Util.println("Golden section search on quaternion dot product");
-            Util.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
-            Util.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
+            System.out.println("Golden section search on quaternion dot product");
+            System.out.printf("ET (s): %6.3f\n", ((double) finishTime - startTime) / 1000);
+            System.out.printf("ET/call (ns): %6.3f\n ", 1000000 * ((double) finishTime - startTime) / iterations);
         }
     }
 

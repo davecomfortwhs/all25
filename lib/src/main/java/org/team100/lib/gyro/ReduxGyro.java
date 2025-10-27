@@ -6,7 +6,6 @@ import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.logging.LoggerFactory.Rotation2dLogger;
 import org.team100.lib.util.CanId;
-import org.team100.lib.util.Util;
 
 import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import com.reduxrobotics.sensors.canandgyro.CanandgyroFaults;
@@ -44,11 +43,11 @@ public class ReduxGyro implements Gyro {
         settings.setAngularVelocityFramePeriod(0.01);
 
         if (!m_gyro.setSettings(settings, 0.1)) {
-            Util.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            Util.warn("!!                                          !!");
-            Util.warn("!!           GYRO SETTING FAILED!           !!");
-            Util.warn("!!                                          !!");
-            Util.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("WARNING: !!                                          !!");
+            System.out.println("WARNING: !!           GYRO SETTING FAILED!           !!");
+            System.out.println("WARNING: !!                                          !!");
+            System.out.println("WARNING: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
         m_gyro.clearStickyFaults();
         m_gyro.setYaw(0);
@@ -112,10 +111,10 @@ public class ReduxGyro implements Gyro {
     @Override
     public void periodic() {
         if (m_gyro.isCalibrating())
-            Util.println("Redux Gyro Calibrating ......");
+            System.out.println("Redux Gyro Calibrating ......");
         final CanandgyroFaults activeFaults = m_gyro.getActiveFaults();
         if (activeFaults.faultsValid())
-            Util.warn("Redux Gyro fault!");
+            System.out.println("WARNING: Redux Gyro fault!");
 
     }
 }

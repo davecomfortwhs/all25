@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.team100.lib.geometry.GeometryUtil;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,18 +35,21 @@ public class SplineUtil {
             HolonomicSpline s0 = splines.get(i);
             HolonomicSpline s1 = splines.get(i + 1);
             if (!MathUtil.isNear(s0.dx(1), s1.dx(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad x C1 %f %f\n", s0.dx(1), s1.dx(0));
+                if (DEBUG) {
+                    System.out.printf("bad x C1 %f %f\n", s0.dx(1), s1.dx(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.dy(1), s1.dy(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad y C1 %f %f\n", s0.dy(1), s1.dy(0));
+                if (DEBUG) {
+                    System.out.printf("bad y C1 %f %f\n", s0.dy(1), s1.dy(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.dtheta(1), s1.dtheta(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad theta C1 %f %f\n", s0.dtheta(1), s1.dtheta(0));
+                if (DEBUG) {
+                    System.out.printf("bad theta C1 %f %f\n", s0.dtheta(1), s1.dtheta(0));
+                }
                 return false;
             }
         }
@@ -65,18 +67,21 @@ public class SplineUtil {
             HolonomicSpline s0 = splines.get(i);
             HolonomicSpline s1 = splines.get(i + 1);
             if (!MathUtil.isNear(s0.ddx(1), s1.ddx(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad x C2 %f %f\n", s0.ddx(1), s1.ddx(0));
+                if (DEBUG) {
+                    System.out.printf("bad x C2 %f %f\n", s0.ddx(1), s1.ddx(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.ddy(1), s1.ddy(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad y C2 %f %f\n", s0.ddy(1), s1.ddy(0));
+                if (DEBUG) {
+                    System.out.printf("bad y C2 %f %f\n", s0.ddy(1), s1.ddy(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.ddtheta(1), s1.ddtheta(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad theta C2 %f %f\n", s0.ddtheta(1), s1.ddtheta(0));
+                if (DEBUG) {
+                    System.out.printf("bad theta C2 %f %f\n", s0.ddtheta(1), s1.ddtheta(0));
+                }
                 return false;
             }
         }
@@ -94,18 +99,21 @@ public class SplineUtil {
             HolonomicSpline s0 = splines.get(i);
             HolonomicSpline s1 = splines.get(i + 1);
             if (!MathUtil.isNear(s0.dddx(1), s1.dddx(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad x C3 %f %f\n", s0.dddx(1), s1.dddx(0));
+                if (DEBUG) {
+                    System.out.printf("bad x C3 %f %f\n", s0.dddx(1), s1.dddx(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.dddy(1), s1.dddy(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad y C3 %f %f\n", s0.dddy(1), s1.dddy(0));
+                if (DEBUG) {
+                    System.out.printf("bad y C3 %f %f\n", s0.dddy(1), s1.dddy(0));
+                }
                 return false;
             }
             if (!MathUtil.isNear(s0.dddtheta(1), s1.dddtheta(0), 1e-6)) {
-                if (DEBUG)
-                    Util.printf("bad theta C3 %f %f\n", s0.dddtheta(1), s1.dddtheta(0));
+                if (DEBUG) {
+                    System.out.printf("bad theta C3 %f %f\n", s0.dddtheta(1), s1.dddtheta(0));
+                }
                 return false;
             }
         }
@@ -129,21 +137,25 @@ public class SplineUtil {
             // not with respect to distance.
             double d0 = Math.hypot(s0.x(1) - s0.x(0), s0.y(1) - s0.y(0));
             double d1 = Math.hypot(s1.x(1) - s1.x(0), s1.y(1) - s1.y(0));
-            if (DEBUG)
-                Util.printf("d0 %f d1 %f\n", d0, d1);
+            if (DEBUG) {
+                System.out.printf("d0 %f d1 %f\n", d0, d1);
+            }
             // // note, sometimes these can be zero
             if (d0 < 1e-3 || d1 < 1e-3)
                 return;
 
             double s0dx1 = s0.dx(1);
-            if (DEBUG)
-                Util.printf("s0dx1 %f\n", s0dx1);
+            if (DEBUG) {
+                System.out.printf("s0dx1 %f\n", s0dx1);
+            }
             double s1dx0 = s1.dx(0);
-            if (DEBUG)
-                Util.printf("s1dx0 %f\n", s1dx0);
+            if (DEBUG) {
+                System.out.printf("s1dx0 %f\n", s1dx0);
+            }
             double meanDx = 0.5 * (s0dx1 / d0 + s1dx0 / d1);
-            if (DEBUG)
-                Util.printf("mean dx %f\n", meanDx);
+            if (DEBUG) {
+                System.out.printf("mean dx %f\n", meanDx);
+            }
             double s0dy1 = s0.dy(1);
             double s1dy0 = s1.dy(0);
             double meanDy = 0.5 * (s0dy1 / d0 + s1dy0 / d1);
@@ -189,7 +201,7 @@ public class SplineUtil {
             prev = current;
             count++;
         }
-        Util.warn("Spline optimization failed");
+        System.out.println("WARNING: Spline optimization failed");
         return prev;
     }
 

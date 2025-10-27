@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 
 class TargetLocalizerTest {
+    private static final boolean DEBUG = false;
     private static final double DELTA = 0.001;
 
     @Test
@@ -383,6 +384,82 @@ class TargetLocalizerTest {
             Optional<Translation2d> t = TargetLocalizer.sightToRobotRelative(camera, sight);
             assertTrue(t.isEmpty());
         }
+    }
+
+    @Test
+    void testSightInRobotCoordsToTranslation2d() {
+        // straight down should be zero
+        Translation2d t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, new Rotation3d(0, Math.PI / 2, 0))).orElseThrow();
+        assertEquals(0, t.getX(), DELTA);
+        assertEquals(0, t.getY(), DELTA);
+
+        // 45 ahead
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, new Rotation3d(0, Math.PI / 4, 0))).orElseThrow();
+        assertEquals(1, t.getX(), DELTA);
+        assertEquals(0, t.getY(), DELTA);
+
+        // 45 left
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, new Rotation3d(0, Math.PI / 4, Math.PI / 2))).orElseThrow();
+        assertEquals(0, t.getX(), DELTA);
+        assertEquals(1, t.getY(), DELTA);
+
+        // 45 ahead constructed the way the camera does
+        Rotation3d r = new Rotation3d(VecBuilder.fill(1, 0, 0), VecBuilder.fill(1, 0, -1));
+        assertEquals(0, r.getX(), DELTA);
+        assertEquals(Math.PI / 4, r.getY(), DELTA);
+        assertEquals(0, r.getZ(), DELTA);
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, r)).orElseThrow();
+        assertEquals(1, t.getX(), DELTA);
+        assertEquals(0, t.getY(), DELTA);
+
+        // oblique constructed the way the camera does
+        r = new Rotation3d(VecBuilder.fill(1, 0, 0), VecBuilder.fill(1, 1, -1));
+        // note weird roll
+        assertEquals(0.262, r.getX(), DELTA);
+        assertEquals(0.615, r.getY(), DELTA);
+        assertEquals(0.785, r.getZ(), DELTA);
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, r)).orElseThrow();
+        // but the answer turns out right
+        assertEquals(1, t.getX(), DELTA);
+        assertEquals(1, t.getY(), DELTA);
+
+        // oblique constructed the way the camera does
+        r = new Rotation3d(VecBuilder.fill(1, 0, 0), VecBuilder.fill(1, 1, -0.5));
+        assertEquals(0.142, r.getX(), DELTA);
+        assertEquals(0.340, r.getY(), DELTA);
+        assertEquals(0.785, r.getZ(), DELTA);
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, r)).orElseThrow();
+        assertEquals(2, t.getX(), DELTA);
+        assertEquals(2, t.getY(), DELTA);
+
+        // oblique constructed the way the camera does
+        r = new Rotation3d(VecBuilder.fill(1, 0, 0), VecBuilder.fill(1, 0.5, -0.5));
+        assertEquals(0.101, r.getX(), DELTA);
+        assertEquals(0.420, r.getY(), DELTA);
+        assertEquals(0.464, r.getZ(), DELTA);
+        t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                new Transform3d(0, 0, 1, r)).orElseThrow();
+        assertEquals(2, t.getX(), DELTA);
+        assertEquals(1, t.getY(), DELTA);
+
+        for (double y = -1; y <= 1; y += 0.1) {
+            for (double z = -1; z < -0.1; z += 0.1) {
+                if (DEBUG)
+                    System.out.printf("y %6.3f z %6.3f\n", y, z);
+                r = new Rotation3d(VecBuilder.fill(1, 0, 0), VecBuilder.fill(1, y, z));
+                t = TargetLocalizer.sightInRobotCoordsToTranslation2d(
+                        new Transform3d(0, 0, 1, r)).orElseThrow();
+                assertEquals(-1 / z, t.getX(), DELTA);
+                assertEquals(-y / z, t.getY(), DELTA);
+            }
+        }
+
     }
 
     @Test

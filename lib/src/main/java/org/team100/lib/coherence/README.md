@@ -22,4 +22,9 @@ To avoid these issues:
   start of every main loop.  The goal is for the measurements to represent,
   as nearly as possible, the state of the world at the time of the hardware
   interrupt.
-  
+
+Cache updates run in two phases: first all the caches are invalidated.  Then all
+the caches are refreshed, one at a time.  Some caches might depend on others.
+These dependencies are handled through the normal flow of user code.
+Refreshing one cache may also refreshe a dependency as a side-effect, so that
+when the central cache refresher gets to the second one, it's already done.

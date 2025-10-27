@@ -1,14 +1,16 @@
 package org.team100.lib.trajectory.timing;
 
 import org.team100.lib.geometry.Pose2dWithMotion;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.tuning.Mutable;
 
 /**
  * Velocity limit based on curvature and the capsize limit (scaled).
  */
 public class CapsizeAccelerationConstraint implements TimingConstraint {
     private final SwerveKinodynamics m_limits;
-    private final double m_scale;
+    private final Mutable m_scale;
 
     /**
      * Use the factory.
@@ -19,9 +21,13 @@ public class CapsizeAccelerationConstraint implements TimingConstraint {
      *               sharp curves, which makes odometry more accurate and reduces
      *               the effect of steering lag.
      */
-    public CapsizeAccelerationConstraint(SwerveKinodynamics limits, double scale) {
+    public CapsizeAccelerationConstraint(
+            LoggerFactory parent,
+            SwerveKinodynamics limits,
+            double scale) {
+        LoggerFactory log = parent.type(this);
         m_limits = limits;
-        m_scale = scale;
+        m_scale = new Mutable(log, "scale", scale);
     }
 
     /**
@@ -33,7 +39,7 @@ public class CapsizeAccelerationConstraint implements TimingConstraint {
      */
     @Override
     public NonNegativeDouble getMaxVelocity(final Pose2dWithMotion state) {
-        double mMaxCentripetalAccel = m_limits.getMaxCapsizeAccelM_S2() * m_scale;
+        double mMaxCentripetalAccel = m_limits.getMaxCapsizeAccelM_S2() * m_scale.getAsDouble();
         double radius = 1 / state.getCurvature();
         // abs is used here to make sure sqrt is happy.
         return new NonNegativeDouble(Math.sqrt(Math.abs(mMaxCentripetalAccel * radius)));
@@ -52,7 +58,7 @@ public class CapsizeAccelerationConstraint implements TimingConstraint {
      */
     @Override
     public MinMaxAcceleration getMinMaxAcceleration(Pose2dWithMotion state, double velocity) {
-        double mMaxCentripetalAccel = m_limits.getMaxCapsizeAccelM_S2() * m_scale;
+        double mMaxCentripetalAccel = m_limits.getMaxCapsizeAccelM_S2() * m_scale.getAsDouble();
 
         double radius = 1 / state.getCurvature();
         double centripetalAccel = velocity * velocity / radius;
@@ -60,7 +66,7 @@ public class CapsizeAccelerationConstraint implements TimingConstraint {
         if (alongsq < 0) {
             // if you're here, you're violating the velocity constraint above,
             // and you should try to gently slow down.
-            return new MinMaxAcceleration(-m_limits.getMaxDriveDecelerationM_S2() * m_scale, 0);
+            return new MinMaxAcceleration(-m_limits.getMaxDriveDecelerationM_S2() * m_scale.getAsDouble(), 0);
         }
         double along = Math.sqrt(alongsq);
         return new MinMaxAcceleration(-along, along);

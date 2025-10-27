@@ -7,7 +7,6 @@ import org.team100.lib.geometry.HolonomicPose2d;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.geometry.Pose2dWithMotion.MotionDirection;
 import org.team100.lib.util.Math100;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -33,9 +32,9 @@ public class HolonomicSpline {
     // low. most splines go between 0.5 and 5 meters so this is steps of 2 to 20 cm.
     private static final int SAMPLES = 25;
 
-    private final Spline1d m_x;
-    private final Spline1d m_y;
-    private final Spline1d m_theta;
+    private final SplineR1 m_x;
+    private final SplineR1 m_y;
+    private final SplineR1 m_theta;
     /**
      * Offset for rotational spline: the rotational spline doesn't include the
      * starting point in order to correctly handle wrapping.
@@ -67,8 +66,9 @@ public class HolonomicSpline {
     public HolonomicSpline(HolonomicPose2d p0, HolonomicPose2d p1, double mN0, double mN1) {
         double scale0 = mN0 * GeometryUtil.distance(p0.translation(), p1.translation());
         double scale1 = mN1 * GeometryUtil.distance(p0.translation(), p1.translation());
-        if (DEBUG)
-            Util.printf("scale %f %f\n", scale0, scale1);
+        if (DEBUG) {
+            System.out.printf("scale %f %f\n",  scale0, scale1 );
+        }
         double x0 = p0.translation().getX();
         double x1 = p1.translation().getX();
         // first derivatives are just the course
@@ -87,8 +87,8 @@ public class HolonomicSpline {
         double ddy0 = 0;
         double ddy1 = 0;
 
-        m_x = Spline1d.newSpline1d(x0, x1, dx0, dx1, ddx0, ddx1);
-        m_y = Spline1d.newSpline1d(y0, y1, dy0, dy1, ddy0, ddy1);
+        m_x = SplineR1.get(x0, x1, dx0, dx1, ddx0, ddx1);
+        m_y = SplineR1.get(y0, y1, dy0, dy1, ddy0, ddy1);
 
         m_r0 = p0.heading();
         double delta = p0.heading().unaryMinus().rotateBy(p1.heading()).getRadians();
@@ -105,7 +105,7 @@ public class HolonomicSpline {
         // second derivatives are zero at the ends
         double ddtheta0 = 0;
         double ddtheta1 = 0;
-        m_theta = Spline1d.newSpline1d(0.0, delta, dtheta0, dtheta1, ddtheta0, ddtheta1);
+        m_theta = SplineR1.get(0.0, delta, dtheta0, dtheta1, ddtheta0, ddtheta1);
     }
 
     @Override
@@ -115,9 +115,9 @@ public class HolonomicSpline {
 
     /** This is used by various optimization steps. */
     private HolonomicSpline(
-            Spline1d x,
-            Spline1d y,
-            Spline1d theta,
+            SplineR1 x,
+            SplineR1 y,
+            SplineR1 theta,
             Rotation2d r0) {
         m_x = x;
         m_y = y;
@@ -176,21 +176,21 @@ public class HolonomicSpline {
             double dtheta0,
             double dtheta1) {
         return new HolonomicSpline(
-                Spline1d.newSpline1d(
+                SplineR1.get(
                         m_x.getPosition(0),
                         m_x.getPosition(1),
                         dx0,
                         dx1,
                         m_x.getAcceleration(0),
                         m_x.getAcceleration(1)),
-                Spline1d.newSpline1d(
+                SplineR1.get(
                         m_y.getPosition(0),
                         m_y.getPosition(1),
                         dy0,
                         dy1,
                         m_y.getAcceleration(0),
                         m_y.getAcceleration(1)),
-                Spline1d.newSpline1d(
+                SplineR1.get(
                         m_theta.getPosition(0),
                         m_theta.getPosition(1),
                         dtheta0,
@@ -210,8 +210,8 @@ public class HolonomicSpline {
             double ddy0_sub,
             double ddy1_sub) {
         return new HolonomicSpline(
-                m_x.addCoefs(Spline1d.newSpline1d(0, 0, 0, 0, ddx0_sub, ddx1_sub)),
-                m_y.addCoefs(Spline1d.newSpline1d(0, 0, 0, 0, ddy0_sub, ddy1_sub)),
+                m_x.addCoefs(SplineR1.get(0, 0, 0, 0, ddx0_sub, ddx1_sub)),
+                m_y.addCoefs(SplineR1.get(0, 0, 0, 0, ddy0_sub, ddy1_sub)),
                 m_theta,
                 m_r0);
     }

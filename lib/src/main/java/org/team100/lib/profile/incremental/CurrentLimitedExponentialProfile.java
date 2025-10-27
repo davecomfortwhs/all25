@@ -2,7 +2,6 @@ package org.team100.lib.profile.incremental;
 
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
 
 /**
  * Uses a trapezoid profile for low (current-limited) speed.
@@ -44,8 +43,9 @@ public class CurrentLimitedExponentialProfile implements IncrementalProfile {
         double setpointV = setpoint.v();
         boolean isAccel = Math.abs(setpointV) > Math.abs(initialV)
                 && Math.signum(setpointV) == Math.signum(initialV);
-        if (DEBUG)
-            Util.printf("initial %5.2f setpoint %5.2f isAccel %b\n", initialV, setpointV, isAccel);
+        if (DEBUG) {
+            System.out.printf("initial %5.2f setpoint %5.2f isAccel %b\n", initialV, setpointV, isAccel);
+        }
         return isAccel;
     }
 

@@ -59,7 +59,6 @@ public class TrapezoidProfileGenerator {
                         noCoastProfile.end(), goal, maxVel, maxAccel, true));
             } else {
                 // violate the constraints
-                // TODO: remove this
                 // single segment profile
                 double dt = (goal.v() - start.v()) / requiredAccel;
                 return new MotionProfileBuilder(start)
@@ -67,7 +66,7 @@ public class TrapezoidProfileGenerator {
                         .build();
             }
         } else if (start.v() > maxVel && goal.v() > maxVel) {
-            // this should not happen. TODO: remove this
+            // this should not happen.
             // decel, accel
             List<Double> roots = Math100.solveQuadratic(
                     -maxAccel,

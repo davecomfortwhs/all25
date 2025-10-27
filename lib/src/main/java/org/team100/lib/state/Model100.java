@@ -41,6 +41,12 @@ public record Model100(double x, double v) implements Interpolatable<Model100> {
         return new Model100(x * scalar, v * scalar);
     }
 
+    /** Use the velocity to evolve the position. */
+    public Model100 evolve(double dt) {
+        double dx = v * dt;
+        return new Model100(x + dx, v);
+    }
+
     /**
      * True if not null and position and velocity are both within (the same)
      * tolerance

@@ -1,7 +1,7 @@
 package org.team100.frc2025.parkinglot;
 
-import org.team100.lib.motion.Config;
-import org.team100.lib.motion.kinematics.JointForce;
+import org.team100.lib.motion.prr.Config;
+import org.team100.lib.motion.prr.JointForce;
 /** Models the force of gravity on each joint. */
 public class Gravity {
     /** making g variable means i can make it 10 in tests. */

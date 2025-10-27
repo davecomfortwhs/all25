@@ -5,11 +5,11 @@ import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.motor.BareMotor;
-import org.team100.lib.motor.Kraken6Motor;
-import org.team100.lib.motor.LazySimulatedBareMotor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode;
-import org.team100.lib.motor.SimulatedBareMotor;
+import org.team100.lib.motor.ctre.Kraken6Motor;
+import org.team100.lib.motor.sim.LazySimulatedBareMotor;
+import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,12 +29,12 @@ public class ClimberIntake extends SubsystemBase {
                         log, canID, NeutralMode.COAST, MotorPhase.REVERSE,
                         20, // og 50
                         20, // og 2
-                        new PIDConstants(),
-                        Feedforward100.makeKrakenClimberIntake());
+                        PIDConstants.zero(log),
+                        Feedforward100.makeKrakenClimberIntake(log));
             }
             default -> {
                 m_motor = new LazySimulatedBareMotor(
-                        new SimulatedBareMotor(log, 100), 1.5);
+                        new SimulatedBareMotor(log, 600), 1.5);
             }
         }
     }
@@ -46,6 +46,10 @@ public class ClimberIntake extends SubsystemBase {
 
     public boolean isSlow() {
         return m_motor.getVelocityRad_S() < 1;
+    }
+
+    public boolean intaking() {
+        return count > 0;
     }
 
     public boolean isIn() {
@@ -60,7 +64,7 @@ public class ClimberIntake extends SubsystemBase {
 
     public Command intake() {
         return startRun(
-            () -> count = 0,
+                () -> count = 0,
                 () -> {
                     fullSpeed();
                     if (isSlow()) {

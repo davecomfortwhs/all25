@@ -1,8 +1,8 @@
 package org.team100.lib.examples.semiauto;
 
-import org.team100.lib.hid.DriverControl;
+import org.team100.lib.hid.DriverXboxControl;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.motion.drivetrain.SwerveDriveSubsystem;
+import org.team100.lib.motion.swerve.SwerveDriveSubsystem;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class PositionAwareSubsystemSetup {
     public PositionAwareSubsystemSetup(
             LoggerFactory log,
-            DriverControl control,
+            DriverXboxControl control,
             SwerveDriveSubsystem drive) {
 
         PositionAwareSubsytem shooterElevation = new PositionAwareSubsytem(
@@ -24,6 +24,6 @@ public class PositionAwareSubsystemSetup {
         shooterElevation.setDefaultCommand(shooterElevation.holdAimingPoint());
 
         // ... or you could run it on demand:
-        new Trigger(control::button4).whileTrue(shooterElevation.holdAimingPoint());
+        new Trigger(control::a).whileTrue(shooterElevation.holdAimingPoint());
     }
 }

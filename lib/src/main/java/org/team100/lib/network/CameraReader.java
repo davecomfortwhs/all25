@@ -3,7 +3,6 @@ package org.team100.lib.network;
 import java.util.EnumSet;
 
 import org.team100.lib.config.Camera;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.MultiSubscriber;
@@ -64,21 +63,23 @@ public abstract class CameraReader<T> {
             ValueEventData valueEventData = e.valueData;
             NetworkTableValue ntValue = valueEventData.value;
             String name = valueEventData.getTopic().getName();
-            if (DEBUG)
-                Util.printf("poll %s\n", name);
+            if (DEBUG) {
+                System.out.printf("poll %s\n", name);
+            }
             String[] fields = name.split("/");
             if (fields.length != 4) {
-                Util.warnf("weird event name: %s\n", name);
+                System.out.printf("WARNING: weird event name: %s\n", name);
                 continue;
             }
             // key is "rootName/cameraId/cameraNumber/valueName"
             String cameraId = fields[1];
             if (!fields[3].equals(m_ntValueName)) {
-                Util.warn("weird key: " + name);
+                System.out.println("WARNING: weird key: " + name);
                 continue;
             }
-            if (DEBUG)
-                Util.printf("found value\n");
+            if (DEBUG) {
+                System.out.print("found value\n");
+            }
             // decode the way StructArrayEntryImpl does
             byte[] valueBytes = ntValue.getRaw();
             if (valueBytes.length == 0) {
@@ -89,15 +90,16 @@ public abstract class CameraReader<T> {
             try {
                 valueArray = m_buf.readArray(valueBytes);
             } catch (RuntimeException ex) {
-                Util.warnf("decoding failed for name: %s\n", name);
+                System.out.printf("WARNING: decoding failed for name: %s\n", name);
                 continue;
             }
 
             // Robot-to-camera, offset from Camera.java
             // in tests this offset is identity.
             Transform3d cameraOffset = Camera.get(cameraId).getOffset();
-            if (DEBUG)
-                Util.printf("camera %s offset %s\n", cameraId, cameraOffset);
+            if (DEBUG) {
+                System.out.printf("camera %s offset %s\n", cameraId, cameraOffset);
+            }
 
             // server time is in microseconds
             // https://docs.wpilib.org/en/stable/docs/software/networktables/networktables-intro.html#timestamps
@@ -109,8 +111,9 @@ public abstract class CameraReader<T> {
             // time, so this uses "local" time now.
             // double valueTimestamp = ((double)ntValue.getServerTime()) / 1000000.0;
             double valueTimestamp = ((double) ntValue.getTime()) / 1000000.0;
-            if (DEBUG)
-                Util.printf("reader timestamp %f\n", valueTimestamp);
+            if (DEBUG) {
+                System.out.printf("reader timestamp %f\n", valueTimestamp);
+            }
 
             perValue(cameraOffset, valueTimestamp, valueArray);
         }

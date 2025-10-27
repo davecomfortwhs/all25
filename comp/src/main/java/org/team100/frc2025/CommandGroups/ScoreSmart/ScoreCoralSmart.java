@@ -1,8 +1,8 @@
 package org.team100.frc2025.CommandGroups.ScoreSmart;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.print;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.select;
 
 import java.util.Map;
@@ -12,11 +12,11 @@ import java.util.function.Supplier;
 import org.team100.frc2025.CalgamesArm.CalgamesMech;
 import org.team100.frc2025.grip.Manipulator;
 import org.team100.lib.config.ElevatorUtil.ScoringLevel;
-import org.team100.lib.controller.drivetrain.SwerveController;
+import org.team100.lib.controller.r3.ControllerR3;
 import org.team100.lib.field.FieldConstants;
 import org.team100.lib.field.FieldConstants.ReefPoint;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.motion.drivetrain.SwerveDriveSubsystem;
+import org.team100.lib.motion.swerve.SwerveDriveSubsystem;
 import org.team100.lib.profile.HolonomicProfile;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -30,7 +30,7 @@ public class ScoreCoralSmart {
             LoggerFactory logger,
             CalgamesMech mech,
             Manipulator manipulator,
-            SwerveController controller,
+            ControllerR3 controller,
             HolonomicProfile profile,
             SwerveDriveSubsystem drive,
             DoubleConsumer heedRadiusM,

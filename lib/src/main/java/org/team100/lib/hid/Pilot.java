@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.GenericHID;
  * Operator features are not implemented.
  * Command buttons are not implemented.
  */
-public class Pilot implements DriverControl {
+public class Pilot {
     private static final double DEADBAND = 0.02;
     private static final double EXPO = 0.5;
 
@@ -24,18 +24,11 @@ public class Pilot implements DriverControl {
     public Pilot() {
         m_controller = new GenericHID(0);
     }
-
-    @Override
-    public String getHIDName() {
-        return m_controller.getName();
-    }
-
-    @Override
+    
     public boolean resetRotation0() {
         return button(2);
     }
 
-    @Override
     public boolean resetRotation180() {
         return button(3);
     }
@@ -44,15 +37,13 @@ public class Pilot implements DriverControl {
      * Applies expo to each axis individually, works for "square" joysticks.
      * The square response of this joystick should be clamped by the consumer.
      */
-    @Override
-    public DriverControl.Velocity velocity() {
+    public Velocity velocity() {
         double dx = expo(deadband(-1.0 * clamp(axis(1), 1), DEADBAND, 1), EXPO);
         double dy = expo(deadband(-1.0 * clamp(axis(0), 1), DEADBAND, 1), EXPO);
         double dtheta = 0; // there is no rotational velocity control.
-        return new DriverControl.Velocity(dx, dy, dtheta);
+        return new Velocity(dx, dy, dtheta);
     }
 
-    @Override
     public Rotation2d desiredRotation() {
         // the control goes from -1 to 1 in one turn
         double rotControl = m_controller.getRawAxis(5);

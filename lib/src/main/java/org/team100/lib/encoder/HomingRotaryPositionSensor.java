@@ -1,7 +1,5 @@
 package org.team100.lib.encoder;
 
-import java.util.OptionalDouble;
-
 import edu.wpi.first.math.MathUtil;
 
 /**
@@ -26,25 +24,22 @@ public class HomingRotaryPositionSensor implements RotaryPositionSensor {
      * You should call this at the "homing position".
      */
     public void setPosition(double x) {
-        OptionalDouble val = m_sensor.getPositionRad();
-        if (val.isEmpty())
-            return;
-        double p = val.getAsDouble();
-        m_offset = x - p;
+        m_offset = x - m_sensor.getWrappedPositionRad();
     }
 
     @Override
-    public OptionalDouble getPositionRad() {
-        OptionalDouble val = m_sensor.getPositionRad();
-        if (val.isEmpty())
-            return val;
-        double p = val.getAsDouble();
-        return OptionalDouble.of(MathUtil.angleModulus(p + m_offset));
+    public double getWrappedPositionRad() {
+        return MathUtil.angleModulus(getUnwrappedPositionRad());
+    }
+
+    @Override
+    public double getUnwrappedPositionRad() {
+        return m_sensor.getUnwrappedPositionRad() + m_offset;
     }
 
     /** Velocity is independent of offset. */
     @Override
-    public OptionalDouble getVelocityRad_S() {
+    public double getVelocityRad_S() {
         return m_sensor.getVelocityRad_S();
     }
 

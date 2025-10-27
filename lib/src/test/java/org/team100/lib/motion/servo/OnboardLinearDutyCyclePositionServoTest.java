@@ -1,19 +1,18 @@
 package org.team100.lib.motion.servo;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.controller.simple.Feedback100;
-import org.team100.lib.controller.simple.FullStateFeedback;
-import org.team100.lib.encoder.SimulatedBareEncoder;
+import org.team100.lib.controller.r1.Feedback100;
+import org.team100.lib.controller.r1.FullStateFeedback;
+import org.team100.lib.encoder.sim.SimulatedBareEncoder;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
 import org.team100.lib.motion.mechanism.LinearMechanism;
-import org.team100.lib.motor.SimulatedBareMotor;
+import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.profile.incremental.IncrementalProfile;
 import org.team100.lib.profile.incremental.TrapezoidIncrementalProfile;
-import org.team100.lib.reference.IncrementalProfileReference1d;
+import org.team100.lib.reference.r1.IncrementalProfileReferenceR1;
 import org.team100.lib.testing.Timeless;
-import org.team100.lib.util.Util;
 
 public class OnboardLinearDutyCyclePositionServoTest implements Timeless {
     private static final boolean DEBUG = false;
@@ -22,17 +21,17 @@ public class OnboardLinearDutyCyclePositionServoTest implements Timeless {
     @Test
     void test1() {
 
-        SimulatedBareMotor driveMotor = new SimulatedBareMotor(logger, 100);
+        SimulatedBareMotor driveMotor = new SimulatedBareMotor(logger, 600);
         SimulatedBareEncoder driveEncoder = new SimulatedBareEncoder(logger, driveMotor);
         LinearMechanism mech = new LinearMechanism(logger,
                 driveMotor, driveEncoder, 1, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         IncrementalProfile profile = new TrapezoidIncrementalProfile(2, 1, 0.01);
-        IncrementalProfileReference1d ref = new IncrementalProfileReference1d(profile, 0.05, 0.05);
+        IncrementalProfileReferenceR1 ref = new IncrementalProfileReferenceR1(profile, 0.05, 0.05);
 
         final double k1 = 1.0;
         final double k2 = 0.01;
-        Feedback100 feedback = new FullStateFeedback(logger, k1, k2, x -> x, 1, 1);
+        Feedback100 feedback = new FullStateFeedback(logger, k1, k2, false, 1, 1);
 
         OnboardLinearDutyCyclePositionServo s = new OnboardLinearDutyCyclePositionServo(
                 logger, mech, ref, feedback, 0.1);
@@ -41,12 +40,12 @@ public class OnboardLinearDutyCyclePositionServoTest implements Timeless {
             s.setPositionProfiled(1, 0);
             stepTime();
             if (DEBUG)
-                Util.printf("%f, %f, %f, %f, %f\n",
+                System.out.printf("%f, %f, %f, %f, %f\n",
                         t,
                         driveMotor.getVelocityRad_S(),
-                        driveEncoder.getVelocityRad_S().getAsDouble(),
-                        driveEncoder.getPositionRad().getAsDouble(),
-                        mech.getPositionM().getAsDouble());
+                        driveEncoder.getVelocityRad_S(),
+                        driveEncoder.getUnwrappedPositionRad(),
+                        mech.getPositionM());
         }
 
     }

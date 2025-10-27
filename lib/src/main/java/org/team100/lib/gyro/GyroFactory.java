@@ -2,8 +2,8 @@ package org.team100.lib.gyro;
 
 import org.team100.lib.config.Identity;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.module.SwerveModuleCollection;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.module.SwerveModuleCollection;
 import org.team100.lib.util.CanId;
 
 /**

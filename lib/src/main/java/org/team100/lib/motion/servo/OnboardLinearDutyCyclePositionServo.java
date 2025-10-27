@@ -1,15 +1,13 @@
 package org.team100.lib.motion.servo;
 
-import java.util.OptionalDouble;
-
-import org.team100.lib.controller.simple.Feedback100;
+import org.team100.lib.controller.r1.Feedback100;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.Control100Logger;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.motion.mechanism.LinearMechanism;
-import org.team100.lib.reference.ProfileReference1d;
-import org.team100.lib.reference.Setpoints1d;
+import org.team100.lib.reference.r1.ProfileReferenceR1;
+import org.team100.lib.reference.r1.SetpointsR1;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
 
@@ -22,7 +20,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
     private static final double POSITION_TOLERANCE = 0.01;
     private static final double VELOCITY_TOLERANCE = 0.01;
     private final LinearMechanism m_mechanism;
-    private final ProfileReference1d m_ref;
+    private final ProfileReferenceR1 m_ref;
     private final Feedback100 m_feedback;
     private final double m_kV;
     private final DoubleLogger m_log_goal;
@@ -42,7 +40,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
     public OnboardLinearDutyCyclePositionServo(
             LoggerFactory parent,
             LinearMechanism mechanism,
-            ProfileReference1d ref,
+            ProfileReferenceR1 ref,
             Feedback100 feedback,
             double kV) {
         LoggerFactory child = parent.type(this);
@@ -64,15 +62,12 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
 
     @Override
     public void reset() {
-        OptionalDouble position = getPosition();
-        if (position.isEmpty())
-            return;
         // using the current velocity sometimes includes a whole lot of noise, and then
         // the profile tries to follow that noise. so instead, use zero.
         // OptionalDouble velocity = getVelocity();
         // if (velocity.isEmpty())
         // return;
-        Control100 measurement = new Control100(position.getAsDouble(), 0);
+        Control100 measurement = new Control100(getPosition(), 0);
         m_setpoint = measurement;
         m_ref.setGoal(measurement.model());
         // reference is initalized with measurement only here.
@@ -108,7 +103,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
      * @param feedForwardTorqueNm ignored
      */
     @Override
-    public void setPositionDirect(Setpoints1d setpoints, double feedForwardTorqueNm) {
+    public void setPositionDirect(SetpointsR1 setpoints, double feedForwardTorqueNm) {
         m_goal = null;
         actuate(setpoints, feedForwardTorqueNm);
     }
@@ -118,15 +113,13 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
      * setpoint, and actuate using duty cycle.
      * Ignores torque
      */
-    private void actuate(Setpoints1d setpoints, double feedForwardTorqueNm) {
+    private void actuate(SetpointsR1 setpoints, double feedForwardTorqueNm) {
         // setpoint must be updated so the profile can see it
         m_setpoint = setpoints.next();
 
-        final OptionalDouble position = getPosition();
-        final OptionalDouble velocity = getVelocity();
-        if (position.isEmpty() || velocity.isEmpty())
-            return;
-        final Model100 measurement = new Model100(position.getAsDouble(), velocity.getAsDouble());
+        final double position = getPosition();
+        final double velocity = getVelocity();
+        final Model100 measurement = new Model100(position, velocity);
 
         final double u_FF = m_kV * m_setpoint.v();
         final double u_FB = m_feedback.calculate(measurement, setpoints.current().model());
@@ -138,30 +131,26 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
         m_log_u_FB.log(() -> u_FB);
         m_log_u_FF.log(() -> u_FF);
         m_log_u_TOTAL.log(() -> u_TOTAL);
-        m_log_error.log(() -> setpoints.current().x() - position.getAsDouble());
-        m_log_velocity_error.log(() -> setpoints.current().v() - velocity.getAsDouble());
+        m_log_error.log(() -> setpoints.current().x() - position);
+        m_log_velocity_error.log(() -> setpoints.current().v() - velocity);
     }
 
     @Override
-    public OptionalDouble getPosition() {
+    public double getPosition() {
         return m_mechanism.getPositionM();
     }
 
     @Override
-    public OptionalDouble getVelocity() {
+    public double getVelocity() {
         return m_mechanism.getVelocityM_S();
     }
 
     @Override
     public boolean atSetpoint() {
-        OptionalDouble pos = m_mechanism.getPositionM();
-        if (pos.isEmpty())
-            return false;
-        OptionalDouble vel = m_mechanism.getVelocityM_S();
-        if (vel.isEmpty())
-            return false;
-        double pErr = m_setpoint.x() - pos.getAsDouble();
-        double vErr = m_setpoint.v() - vel.getAsDouble();
+        double pos = m_mechanism.getPositionM();
+        double vel = m_mechanism.getVelocityM_S();
+        double pErr = m_setpoint.x() - pos;
+        double vErr = m_setpoint.v() - vel;
         return Math.abs(pErr) < POSITION_TOLERANCE
                 && Math.abs(vErr) < VELOCITY_TOLERANCE;
     }
@@ -193,8 +182,8 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
     @Override
     public void periodic() {
         m_mechanism.periodic();
-        m_log_position.log(() -> getPosition().orElse(Double.NaN));
-        m_log_velocity.log(() -> getVelocity().orElse(Double.NaN));
+        m_log_position.log(() -> getPosition());
+        m_log_velocity.log(() -> getVelocity());
     }
 
 }

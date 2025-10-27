@@ -2,20 +2,16 @@ package org.team100.frc2025.Climber;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import org.team100.frc2025.CalgamesArm.CalgamesMech;
 import org.team100.frc2025.Swerve.DriveForwardSlowly;
-import org.team100.lib.motion.drivetrain.SwerveDriveSubsystem;
+import org.team100.lib.motion.swerve.SwerveDriveSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class ClimberCommands {
     /**
      * Set arm position and start spinning.
-     * Wait a second.
-     * Command ends when spin velocity slows and the climber is in position
      */
     public static Command climbIntake(Climber climber, ClimberIntake intake, CalgamesMech mech) {
         return parallel(

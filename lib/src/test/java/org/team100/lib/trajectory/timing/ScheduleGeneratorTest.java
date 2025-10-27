@@ -15,13 +15,15 @@ import org.team100.lib.geometry.GeometryUtil;
 import org.team100.lib.geometry.HolonomicPose2d;
 import org.team100.lib.geometry.Pose2dWithMotion;
 import org.team100.lib.geometry.Pose2dWithMotion.MotionDirection;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamics;
-import org.team100.lib.motion.drivetrain.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.TestLoggerFactory;
+import org.team100.lib.logging.primitive.TestPrimitiveLogger;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
 import org.team100.lib.trajectory.Trajectory100;
 import org.team100.lib.trajectory.path.Path100;
 import org.team100.lib.trajectory.path.PathFactory;
 import org.team100.lib.trajectory.timing.TimingConstraint.MinMaxAcceleration;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +33,7 @@ public class ScheduleGeneratorTest {
     private static final boolean DEBUG = false;
     public static final double EPSILON = 1e-12;
     private static final double DELTA = 0.01;
+    private static final LoggerFactory logger = new TestLoggerFactory(new TestPrimitiveLogger());
 
     public static final List<Pose2dWithMotion> WAYPOINTS = Arrays.asList(
             new Pose2dWithMotion(new Pose2d(new Translation2d(0.0, 0.0), Rotation2d.kZero)),
@@ -172,7 +175,7 @@ public class ScheduleGeneratorTest {
         // Triangle profile.
         Trajectory100 timed_traj = buildAndCheckTrajectory(path,
                 1.0,
-                List.of(new CapsizeAccelerationConstraint(limits, 1.0)), 0.0, 0.0, 20.0, 5.0);
+                List.of(new CapsizeAccelerationConstraint(logger, limits, 1.0)), 0.0, 0.0, 20.0, 5.0);
         assertEquals(66, timed_traj.length());
         assertNotNull(timed_traj);
 
@@ -297,8 +300,8 @@ public class ScheduleGeneratorTest {
         long endTimeNs = System.nanoTime();
         double totalDurationMs = (endTimeNs - startTimeNs) / 1000000.0;
         if (DEBUG) {
-            Util.printf("total duration ms: %5.3f\n", totalDurationMs);
-            Util.printf("duration per iteration ms: %5.3f\n", totalDurationMs / iterations);
+            System.out.printf("total duration ms: %5.3f\n", totalDurationMs);
+            System.out.printf("duration per iteration ms: %5.3f\n", totalDurationMs / iterations);
         }
         assertEquals(18, t.length());
         TimedPose p = t.getPoint(6);

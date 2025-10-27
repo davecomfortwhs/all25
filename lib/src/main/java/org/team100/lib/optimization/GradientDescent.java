@@ -2,8 +2,6 @@ package org.team100.lib.optimization;
 
 import java.util.function.Function;
 
-import org.team100.lib.util.Util;
-
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
 import edu.wpi.first.math.Vector;
@@ -16,12 +14,11 @@ import edu.wpi.first.math.Vector;
 public class GradientDescent<R extends Num> {
     private final Nat<R> m_rows;
     private final Function<Vector<R>, Double> m_f;
+    /** Return the current solution if a step doesn't improve it more than this. */
     private final double m_tolerance;
     private final int m_iterations;
 
     /**
-     * TODO: the tolerance is the *improvement* rather than the error itself.
-     * 
      * Since we're actually optimizing the scalar error instead of an arbitrary
      * function, and we know the error is positive-definite, maybe this should just
      * say that.
@@ -59,13 +56,12 @@ public class GradientDescent<R extends Num> {
             }
             double step = Math.abs(fNext - fCurrent);
             if (step < m_tolerance) {
-                // System.out.println(i);
                 return next;
             }
             current = next;
             fCurrent = fNext;
         }
-        Util.warn("did not meet tolerance");
+        System.out.println("WARNING: did not meet tolerance");
         return current;
     }
 

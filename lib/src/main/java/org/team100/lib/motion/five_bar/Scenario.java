@@ -2,8 +2,6 @@ package org.team100.lib.motion.five_bar;
 
 /**
  * Details of a particular geometry and motor combination.
- * 
- * TODO: flesh this out, implement the rest of it.
  */
 public class Scenario {
     String name;

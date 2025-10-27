@@ -1,257 +1,154 @@
 package org.team100.frc2025;
 
-import java.io.IOException;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.Takt;
-import org.team100.lib.config.Identity;
-import org.team100.lib.experiments.Experiment;
+import org.team100.lib.commands.tank.TankManual;
+import org.team100.lib.config.AnnotatedCommand;
 import org.team100.lib.experiments.Experiments;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.logging.JvmLogger;
-import org.team100.lib.logging.Level;
+import org.team100.lib.hid.DriverXboxControl;
+import org.team100.lib.indicator.Alerts;
+import org.team100.lib.indicator.SolidIndicator;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.LoggerFactory.BooleanLogger;
-import org.team100.lib.logging.LoggerFactory.DoubleLogger;
-import org.team100.lib.logging.LoggerFactory.IntLogger;
 import org.team100.lib.logging.Logging;
-import org.team100.lib.util.Util;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.motion.swerve.kinodynamics.SwerveKinodynamicsFactory;
+import org.team100.lib.motion.swerve.kinodynamics.limiter.SwerveLimiter;
+import org.team100.lib.motion.tank.TankDrive;
+import org.team100.lib.motion.tank.TankDriveFactory;
+import org.team100.lib.util.Banner;
+import org.team100.lib.util.CanId;
+import org.team100.lib.util.RoboRioChannel;
+import org.team100.lib.visualization.TrajectoryVisualization;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.Topic;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot100 {
-    private static final boolean DEBUG = false;
-    private final DoubleLogger m_log_ds_MatchTime;
-    private final BooleanLogger m_log_ds_AutonomousEnabled;
-    private final BooleanLogger m_log_ds_TeleopEnabled;
-    private final BooleanLogger m_log_ds_FMSAttached;
-    private final IntLogger m_log_key_list_size;
-    private final DoubleLogger m_log_voltage;
-    private final JvmLogger m_jvmLogger;
-    private final DoubleLogger m_log_update;
-
-    private RobotContainer m_robotContainer;
+    private static final double MAX_SPEED_M_S = 3.0;
+    private static final double MAX_OMEGA_RAD_S = 3.0;
+    private final TankDrive m_drive;
+    private final TrajectoryVisualization m_trajectoryViz;
+    private final Command m_auton;
+    private final Autons m_autons;
+    private final SolidIndicator m_indicator;
+    private final Alerts m_alerts;
+    private final Alert m_noStartingPosition;
+    private final Alert m_mismatchedAlliance;
 
     public Robot() {
-        LoggerFactory dsLog = m_robotLogger.name("DriverStation");
-        m_log_ds_MatchTime = dsLog.doubleLogger(Level.TRACE, "MatchTime");
-        m_log_ds_AutonomousEnabled = dsLog.booleanLogger(Level.TRACE, "AutonomousEnabled");
-        m_log_ds_TeleopEnabled = dsLog.booleanLogger(Level.TRACE, "TeleopEnabled");
-        m_log_ds_FMSAttached = dsLog.booleanLogger(Level.TRACE, "FMSAttached");
-        m_log_key_list_size = m_robotLogger.intLogger(Level.TRACE, "key list size");
-        m_log_voltage = m_robotLogger.doubleLogger(Level.TRACE, "voltage");
-        m_jvmLogger = new JvmLogger(m_robotLogger);
-        m_log_update = m_robotLogger.doubleLogger(Level.COMP, "update time (s)");
-        // 4/2/25 Joel added this to try to avoid doing extra work
-        // setNetworkTablesFlushEnabled(false);
-        // CanBridge.runTCP();
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    //
-    // RobotInit is called once by TimedRobot.startCompetition.
-    //
-
-    @Override
-    public void robotInit() {
-        Util.printf("WPILib Version: %s\n", WPILibVersion.Version); // 2023.2.1
-        Util.printf("RoboRIO serial number: %s\n", RobotController.getSerialNumber());
-        Util.printf("Identity: %s\n", Identity.instance.name());
-        RobotController.setBrownoutVoltage(5.5);
-        banner();
-
-        // By default, LiveWindow turns off the CommandScheduler in test mode,
-        // but we don't want that.
-        enableLiveWindowInTest(false);
-
-        // log what the scheduler is doing
+        Banner.printBanner();
+        DriverStation.silenceJoystickConnectionWarning(true);
+        Experiments.instance.show();
         SmartDashboard.putData(CommandScheduler.getInstance());
+        m_indicator = new SolidIndicator(new RoboRioChannel(0), 40);
+        m_alerts = new Alerts();
+        m_noStartingPosition = m_alerts.add("No starting position!", AlertType.kWarning);
+        m_mismatchedAlliance = m_alerts.add("Wrong Alliance!", AlertType.kWarning);
+        m_indicator.state(() -> m_alerts.any() ? Color.kRed : Color.kGreen);
+        Logging logging = Logging.instance();
+        LoggerFactory fieldLogger = logging.fieldLogger;
+        DriverXboxControl driverControl = new DriverXboxControl(0);
+        LoggerFactory logger = logging.rootLogger;
+        m_drive = TankDriveFactory.make(
+                fieldLogger,
+                logger,
+                60, // stator current limit (a)
+                new CanId(6), // left
+                new CanId(5), // right
+                0.4, // track width
+                6.0, // gear ratio
+                0.15); // wheel dia (m)
+        SwerveKinodynamics kinodynamics = SwerveKinodynamicsFactory.tank();
+        SwerveLimiter limiter = new SwerveLimiter(
+                logger,
+                kinodynamics,
+                RobotController::getBatteryVoltage);
+        TankManual manual = new TankManual(
+                logger,
+                () -> -1.0 * driverControl.rightY(),
+                () -> -1.0 * driverControl.rightX(),
+                MAX_SPEED_M_S,
+                MAX_OMEGA_RAD_S,
+                limiter,
+                m_drive);
+        m_drive.setDefaultCommand(
+                manual);
+        m_trajectoryViz = new TrajectoryVisualization(fieldLogger);
 
-        try {
-            m_robotContainer = new RobotContainer(this);
-        } catch (IOException e) {
-            throw new IllegalStateException("Robot Container Instantiation Failed", e);
-        }
+        m_autons = new Autons(logger, m_drive, m_trajectoryViz);
 
-        m_robotContainer.onInit();
-
-        NetworkTableInstance.getDefault().startServer();
-
-        // DataLogManager.start();
-
-        Util.printf("Total Logger Keys: %d\n", Logging.instance().keyCount());
-
-        // This reduces the allocated heap size, not just the used heap size, which
-        // means more-frequent and smaller subsequent GC's.
-        System.gc();
+        m_auton = sequence(
+                m_drive.run(() -> m_drive.setVelocity(1, 0)).withTimeout(1),
+                m_drive.run(() -> m_drive.setVelocity(1, 1)).withTimeout(1),
+                m_drive.run(() -> m_drive.setVelocity(1, 0)).withTimeout(1));
     }
 
-    /**
-     * robotPeriodic is called in the IterativeRobotBase.loopFunc, which is what the
-     * TimedRobot runs in the main loop.
-     * 
-     * This is what should do all the work.
-     */
     @Override
     public void robotPeriodic() {
-        try {
-            // real-time priority for this thread while it's running robotPeriodic.
-            // see
-            // https://github.com/Mechanical-Advantage/AdvantageKit/blob/a86d21b27034a36d051798e3eaef167076cd302b/template_projects/sources/vision/src/main/java/frc/robot/Robot.java#L90
-            // This seems to interfere with CAN at startup
-            // Threads.setCurrentThreadPriority(true, 99);
-
-            // Advance the drumbeat.
-            Takt.update();
-
-            // Take all the measurements we can, as soon and quickly as possible.
-            updateCaches();
-
-            // Run one iteration of the command scheduler.
-            CommandScheduler.getInstance().run();
-
-            // Actuate LEDs, do some logging.
-            m_robotContainer.periodic();
-
-            m_log_ds_MatchTime.log(DriverStation::getMatchTime);
-            m_log_ds_AutonomousEnabled.log(DriverStation::isAutonomousEnabled);
-            m_log_ds_TeleopEnabled.log(DriverStation::isTeleopEnabled);
-            m_log_ds_FMSAttached.log(DriverStation::isFMSAttached);
-
-            m_jvmLogger.logGarbageCollectors();
-            m_jvmLogger.logMemoryPools();
-            m_jvmLogger.logMemoryUsage();
-
-            Logging.instance().periodic();
-
-            if (Experiments.instance.enabled(Experiment.FlushOften)) {
-                // Util.warn("FLUSHING EVERY LOOP, DO NOT USE IN COMP");
-                NetworkTableInstance.getDefault().flush();
-            }
-        } finally {
-            // This thread should have low priority when the main loop isn't running.
-            // Threads.setCurrentThreadPriority(false, 0);
-        }
-    }
-
-    /** Update the measurement caches. */
-    private void updateCaches() {
-        double startUpdateS = Takt.actual();
+        Takt.update();
         Cache.refresh();
-        m_log_update.log(() -> (Takt.actual() - startUpdateS));
+        CommandScheduler.getInstance().run();
     }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Exits are called first when mode changes
-    //
-    @Override
-    public void testExit() {
-        clearCommands();
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Inits are called on mode change, after exiting the previous mode.
-    //
 
     @Override
     public void autonomousInit() {
-        m_robotContainer.onAuto();
-        m_robotContainer.scheduleAuton();
+        // choose a command at auton init time
+        Command auton = m_autons.get().command();
+        if (auton == null)
+            return;
+        auton.schedule();
     }
 
     @Override
     public void teleopInit() {
-        // this cancels all the default commands, resulting in them being rescheduled
-        // immediately, which seems like maybe not great?
         CommandScheduler.getInstance().cancelAll();
     }
-
-    @Override
-    public void testInit() {
-        clearCommands();
-        for (Topic t : NetworkTableInstance.getDefault().getTopics()) {
-            if (DEBUG)
-                Util.printf("%s\n", t.getName());
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    //
-    // Mode-specific periodics should do nothing, to avoid caching anything.
-    //
 
     @Override
     public void disabledPeriodic() {
-        int keyListSize = NetworkTableInstance.getDefault().getTable("Vision").getKeys().size();
-        m_log_key_list_size.log(() -> keyListSize);
+        checkStart();
+        checkAlliance();
     }
 
-    @Override
-    public void autonomousPeriodic() {
+    private void checkStart() {
+        AnnotatedCommand cmd = m_autons.get();
+        Pose2d start = cmd.start();
+        if (start == null) {
+            m_noStartingPosition.set(true);
+        } else {
+            m_noStartingPosition.set(false);
+            m_drive.setPose(start);
+        }
     }
 
-    @Override
-    public void teleopPeriodic() {
-        m_log_voltage.log(RobotController::getBatteryVoltage);
+    private void checkAlliance() {
+        AnnotatedCommand cmd = m_autons.get();
+        Alliance alliance = cmd.alliance();
+        if (alliance == null) {
+            // works for either
+            return;
+        }
+        Alliance dsAlliance = DriverStation.getAlliance().orElse(null);
+        if (dsAlliance == null) {
+            // not set yet
+            return;
+        }
+        if (alliance != dsAlliance) {
+            m_mismatchedAlliance.set(true);
+        } else {
+            m_mismatchedAlliance.set(false);
+        }
     }
 
-    @Override
-    public void testPeriodic() {
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Simulation init is called once right after RobotInit.
-    //
-
-    @Override
-    public void simulationInit() {
-        DriverStation.silenceJoystickConnectionWarning(true);
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Simulation periodic is called after everything else; leave it empty.
-    //
-
-    @Override
-    public void simulationPeriodic() {
-        //
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        m_robotContainer.close();
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-
-    private void clearCommands() {
-        CommandScheduler.getInstance().cancelAll();
-        CommandScheduler.getInstance().clearComposedCommands();
-    }
-
-    private void banner() {
-        StringBuilder b = new StringBuilder();
-        b.append("\n");
-        b.append("..########.########....###....##.....##.......##.....#####.....#####....\n");
-        b.append(".....##....##.........##.##...###...###.....####....##...##...##...##...\n");
-        b.append(".....##....##........##...##..####.####.......##...##.....##.##.....##..\n");
-        b.append(".....##....######...##.....##.##.###.##.......##...##.....##.##.....##..\n");
-        b.append(".....##....##.......#########.##.....##.......##...##.....##.##.....##..\n");
-        b.append(".....##....##.......##.....##.##.....##.......##....##...##...##...##...\n");
-        b.append(".....##....########.##.....##.##.....##.....######...#####.....#####....\n");
-        b.append("\n");
-        Util.println(b.toString());
-
-    }
 }

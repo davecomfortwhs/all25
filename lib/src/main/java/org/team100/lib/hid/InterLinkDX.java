@@ -53,7 +53,7 @@ import edu.wpi.first.wpilibj.GenericHID;
  * button 27: ??
  */
 
-public class InterLinkDX implements DriverControl {
+public class InterLinkDX  {
     private static final double DEADBAND = 0.02;
     private static final double EXPO = 0.5;
     private static final double SLOW = 0.25;
@@ -64,12 +64,6 @@ public class InterLinkDX implements DriverControl {
         m_hid = new GenericHID(0);
     }
 
-    @Override
-    public String getHIDName() {
-        return m_hid.getName();
-    }
-
-    @Override
     public Velocity velocity() {
         double dx = expo(deadband(
                 clamp(scale(axis(4), 0.836, 0.031, 0.900), 1),
@@ -88,7 +82,6 @@ public class InterLinkDX implements DriverControl {
         return new Velocity(dx, dy, dtheta);
     }
 
-    @Override
     public boolean resetRotation0() {
         return button(14);
     }

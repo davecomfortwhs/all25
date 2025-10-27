@@ -9,7 +9,9 @@ import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.Falcon6Motor;
 import org.team100.lib.motor.MotorPhase;
+import org.team100.lib.motor.NeutralMode;
 import org.team100.lib.motor.SimulatedBareMotor;
+import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,11 +36,11 @@ public class FiveBarBare extends SubsystemBase {
     public FiveBarBare(LoggerFactory logger) {
         LoggerFactory loggerP1 = logger.name("p1");
         LoggerFactory loggerP5 = logger.name("p5");
-        
+
         switch (Identity.instance) {
             case COMP_BOT -> {
-                m_motorP1 = makeMotor(loggerP1, 1);
-                m_motorP5 = makeMotor(loggerP5, 2);
+                m_motorP1 = makeMotor(loggerP1, new CanId(1));
+                m_motorP5 = makeMotor(loggerP5, new CanId(2));
             }
             default -> {
                 m_motorP1 = new SimulatedBareMotor(loggerP1, 600);
@@ -49,10 +51,11 @@ public class FiveBarBare extends SubsystemBase {
 
     /////////////////////
 
-    private BareMotor makeMotor(LoggerFactory logger, int canId) {
+    private BareMotor makeMotor(LoggerFactory logger, CanId canId) {
         return new Falcon6Motor(
                 logger,
                 canId,
+                NeutralMode.COAST,
                 MotorPhase.FORWARD,
                 SUPPLY_LIMIT,
                 STATOR_LIMIT,

@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 
 import org.team100.frc2025.CalgamesArm.CalgamesMech;
 import org.team100.frc2025.grip.Manipulator;
-import org.team100.lib.commands.Done;
-import org.team100.lib.commands.drivetrain.DriveToPoseWithProfile;
-import org.team100.lib.controller.drivetrain.SwerveController;
+import org.team100.lib.commands.MoveAndHold;
+import org.team100.lib.commands.r3.DriveToPoseWithProfile;
+import org.team100.lib.controller.r3.ControllerR3;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.motion.drivetrain.SwerveDriveSubsystem;
+import org.team100.lib.motion.swerve.SwerveDriveSubsystem;
 import org.team100.lib.profile.HolonomicProfile;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,13 +23,13 @@ public class ScoreL2Smart {
             LoggerFactory logger,
             CalgamesMech mech,
             Manipulator manipulator,
-            SwerveController controller,
+            ControllerR3 controller,
             HolonomicProfile profile,
             SwerveDriveSubsystem drive,
             Supplier<Pose2d> goal) {
         DriveToPoseWithProfile toReef = new DriveToPoseWithProfile(
                 logger, drive, controller, profile, goal);
-        Done toL2 = mech.homeToL2();
+        MoveAndHold toL2 = mech.homeToL2();
         Command eject = manipulator.centerEject().withTimeout(0.5);
         return sequence(
                 parallel(

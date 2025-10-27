@@ -12,19 +12,13 @@ import org.team100.frc2025.shooter.IndexerServo;
 import org.team100.frc2025.shooter.PivotDefault;
 import org.team100.frc2025.shooter.PivotSubsystem;
 import org.team100.frc2025.shooter.Shoot;
-import org.team100.lib.async.Async;
-import org.team100.lib.async.AsyncFactory;
 import org.team100.lib.examples.shooter.DualDrumShooter;
 import org.team100.lib.examples.tank.DriveTank;
 import org.team100.lib.examples.tank.TankDrive;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.hid.DriverControl;
-import org.team100.lib.hid.DriverControlProxy;
-import org.team100.lib.logging.Level;
-import org.team100.lib.logging.LevelPoller;
+import org.team100.lib.hid.DriverXboxControl;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.Logging;
-import org.team100.lib.util.Util;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -38,21 +32,18 @@ public class RobotContainer {
     private final PivotSubsystem m_pivot;
 
     public RobotContainer(TimedRobot100 robot) throws IOException {
-        final AsyncFactory asyncFactory = new AsyncFactory(robot);
-        final Async async = asyncFactory.get();
         final Logging logging = Logging.instance();
-        final LevelPoller poller = new LevelPoller(async, logging::setLevel, Level.COMP);
-        Util.printf("Using log level %s\n", poller.getLevel().name());
-        Util.println("Do not use TRACE in comp, with NT logging, it will overrun");
+
+        LoggerFactory fieldLogger = logging.fieldLogger;
 
         final LoggerFactory logger = logging.rootLogger;
 
-        final DriverControl driverControl = new DriverControlProxy(logger, async);
+        final DriverXboxControl driverControl = new DriverXboxControl(0);
 
         final LoggerFactory sysLog = logger.name("Subsystems");
 
-        m_drive = TankFactory.make(logger, 20);
-        m_drive.setDefaultCommand(new DriveTank(driverControl::velocity, m_drive));
+        m_drive = TankFactory.make(fieldLogger, logger, 20);
+        m_drive.setDefaultCommand(new DriveTank(driverControl::rightY, driverControl::rightX, m_drive));
 
         m_shooter = DrumShooterFactory.make(sysLog, 20);
         m_shooter.setDefaultCommand(m_shooter.run(m_shooter::stop));
@@ -61,7 +52,7 @@ public class RobotContainer {
         m_indexer.setDefaultCommand(m_indexer.run(m_indexer::stop));
 
         m_pivot = new PivotSubsystem(sysLog, 15);
-        m_pivot.setDefaultCommand(new PivotDefault(driverControl::shooterPivot, m_pivot));
+        m_pivot.setDefaultCommand(new PivotDefault(driverControl::leftY, m_pivot));
 
         // this shows two ways to do the "shoot when spinning fast enough" thing.
 

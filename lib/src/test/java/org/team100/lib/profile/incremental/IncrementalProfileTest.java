@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.state.Control100;
 import org.team100.lib.state.Model100;
-import org.team100.lib.util.Util;
 
 public class IncrementalProfileTest {
     private static final boolean DEBUG = false;
@@ -33,9 +32,9 @@ public class IncrementalProfileTest {
         }
         double t1 = Takt.actual();
         if (DEBUG)
-            Util.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
+            System.out.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
         if (DEBUG)
-            Util.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
+            System.out.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
     }
 
     // 3 us to get the eta at full resolution.
@@ -60,9 +59,9 @@ public class IncrementalProfileTest {
         }
         double t1 = Takt.actual();
         if (DEBUG)
-            Util.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
+            System.out.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
         if (DEBUG)
-            Util.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
+            System.out.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
     }
 
     // exponential eta in 1.6 us using coarse step.
@@ -86,8 +85,8 @@ public class IncrementalProfileTest {
         }
         double t1 = Takt.actual();
         if (DEBUG)
-            Util.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
+            System.out.printf("duration (ms)  %5.1f\n", 1e3 * (t1 - t0));
         if (DEBUG)
-            Util.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
+            System.out.printf("per op (ns)    %5.1f\n", 1e9 * (t1 - t0) / N);
     }
 }
